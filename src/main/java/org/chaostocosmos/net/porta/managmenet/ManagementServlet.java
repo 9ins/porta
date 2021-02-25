@@ -1,26 +1,20 @@
 package org.chaostocosmos.net.porta.managmenet;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.chaostocosmos.net.porta.PortaMain;
-import org.eclipse.jetty.server.Authentication.ResponseSent;
-import org.eclipse.jetty.server.session.SessionHandler;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 public class ManagementServlet extends HttpServlet {
 

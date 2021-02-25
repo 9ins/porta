@@ -239,7 +239,7 @@ public class SystemMonitor {
 	 */
 	public static float getProcessHeapInit(UNIT unit) {
 		long value = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getInit();
-		return (float) applyUnit(value, unit.toString());
+		return (float) applyUnit(value, unit.name());
 	}
 	
 	/**
@@ -249,7 +249,7 @@ public class SystemMonitor {
 	 */
 	public static float getProcessHeapUsed(UNIT unit) {
 		long value = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
-		return (float) applyUnit(value, unit.toString());
+		return (float) applyUnit(value, unit.name());
 	}
 
 	/**
@@ -259,7 +259,7 @@ public class SystemMonitor {
 	 */
 	public static float getProcessHeapCommitted(UNIT unit) {
 		long value = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getCommitted();
-		return (float) applyUnit(value, unit.toString());		
+		return (float) applyUnit(value, unit.name());		
 	}
 	
 	/**
@@ -269,7 +269,18 @@ public class SystemMonitor {
 	 */
 	public static float getProcessHeapMax(UNIT unit) {
 		long value = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
-		return (float) applyUnit(value, unit.toString());		
+		return (float) applyUnit(value, unit.name());		
+	}
+
+	/**
+	 * Get process memory usage
+	 * @param unit
+	 * @return
+	 */
+	public static float getProcessMemoryUsed(UNIT unit) {
+		Runtime runtime = Runtime.getRuntime();
+		float value = runtime.totalMemory() - runtime.freeMemory();
+		return (float) applyUnit(value, unit.name());
 	}
 	
 	/**

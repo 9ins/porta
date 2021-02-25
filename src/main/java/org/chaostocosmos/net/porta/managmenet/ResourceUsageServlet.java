@@ -50,12 +50,14 @@ public class ResourceUsageServlet extends HttpServlet {
                 float maxHeapMemory = SystemMonitor.getProcessHeapMax(UNIT.valueOf(unit));
                 float usedHeapMemory = SystemMonitor.getProcessHeapUsed(UNIT.valueOf(unit));
                 float freeHeapMemory = maxHeapMemory - usedHeapMemory;
-                map.put("totalPhysicalMemory", totalPhysicalMemory);
-                map.put("freePhysicalMemory", freePhysicalMemory);
-                map.put("usedPhysicalMemory", usedPhysicalMemory);
-                map.put("maxHeapMemory", maxHeapMemory);
-                map.put("usedHeapMemory", usedHeapMemory);
-                map.put("freeHeapMemory", freeHeapMemory);
+                float usedMemory = SystemMonitor.getProcessMemoryUsed(UNIT.valueOf(unit));
+                map.put("SystemTotal", totalPhysicalMemory);
+                map.put("SystemFree", freePhysicalMemory);
+                map.put("SystemUsed", usedPhysicalMemory);
+                map.put("HeapMax", maxHeapMemory);
+                map.put("HeapUsed", usedHeapMemory);
+                map.put("HeapFree", freeHeapMemory);
+                map.put("MemoryUsed", usedMemory);                
             } catch (AttributeNotFoundException | InstanceNotFoundException | MalformedObjectNameException | MBeanException | ReflectionException e) {
                 Logger.getInstance().throwable(e);
             }
@@ -64,9 +66,9 @@ public class ResourceUsageServlet extends HttpServlet {
                 double cpuLoad = SystemMonitor.getProcessCpuLoad(UNIT.valueOf(unit));
                 double cpuTime = SystemMonitor.getProcessCpuTime(UNIT.valueOf(unit));
                 double systemCpuLoad = SystemMonitor.getSystemCpuLoad(UNIT.valueOf(unit));
-                map.put("processCpuLoad", cpuLoad);
-                map.put("processCpuTime", cpuTime);
-                map.put("systemCpuLoad", systemCpuLoad);
+                map.put("CpuLoad", cpuLoad);
+                map.put("CpuTime", cpuTime);
+                map.put("SystemCpuLoad", systemCpuLoad);
             } catch (AttributeNotFoundException | InstanceNotFoundException | MalformedObjectNameException | MBeanException | ReflectionException e) {
                 Logger.getInstance().throwable(e);
             }

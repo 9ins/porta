@@ -7,11 +7,14 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid'
+import Box from '@material-ui/core/Box';
+import { spacing } from '@material-ui/system';
 import { withStyles } from '@material-ui/core/styles';
+
 
 const styles = theme => ({
     root: {
-        backgroundColor: "#bbcec8",
+        backgroundColor: "#276678",
         minWidth: 275,
     },
     bullet: {
@@ -20,13 +23,22 @@ const styles = theme => ({
         transform: 'scale(0.8)',
     },
     title: {
-        fontSize: 14,
-        fontStyle: "bold"
+        fontSize: 16,        
+        fontStyle: "bold",
+        color: "white"
     },
     pos: {
         marginBottom: 8,
     },
+    cardcontent: {
+        minWidth: 275,
+        paddingLeft: 10,
+        paddingRight:0,
+        paddingTop:10,
+        paddingBottom: 0,
+    }
 });
+
 
 class InfomationCard extends React.Component {
 
@@ -37,21 +49,19 @@ class InfomationCard extends React.Component {
         this.content = this.props.content;
         this.media = this.props.media;
     }
-        
+
     render() {
         const { classes } = this.props;
         const bull = <span className={classes.bullet}>•</span>;
         return (
             <Card className={classes.root}>
-                <CardContent>
+                <CardContent className={classes.cardcontent}>
                     <Typography className={classes.title} color="textSecondary" gutterBottom>
-                        {bull} {this.props.title}
+                         {/*this.props.title*/}
                     </Typography>
-                    <Typography variant="h5" component="h2">
-                        {this.props.content}
+                    <Typography className={classes.title}>
+                    {bull}{this.props.content}
                     </Typography>
-                </CardContent>
-                <CardContent>
                     {this.props.media}
                 </CardContent>
             </Card>
@@ -59,3 +69,7 @@ class InfomationCard extends React.Component {
     };
 }
 export default withStyles(styles)(InfomationCard);
+
+/*
+
+*/

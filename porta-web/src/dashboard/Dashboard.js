@@ -83,14 +83,17 @@ class Dashboard extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      value: 0
+    this.state = {      
+      value: 0,
     }
+  }
+
+  componentDidMount() {
   }
 
   handleChange = (event, newValue) => {
     this.setState({ value: newValue });
-  }
+  }  
 
   render() {
     return (
@@ -120,27 +123,27 @@ class Dashboard extends Component {
           </AppBar>
           <Box>
             <TabPanel value={this.state.value} index={0}>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 <Grid item xs> 
-                  <InfomationCard title="Resource" content="Memory Resource" media={(
+                  <InfomationCard title="Resource" content="Memory Usage" media={(                      
                       <LineChart type="memory" 
-                                  element={["usedHeapMemory", "maxHeapMemory"]} 
-                                  stroke={[randomColor(), randomColor()]} 
+                                  element={["SystemUsed", "HeapFree", "MemoryUsed"]} 
+                                  stroke={[randomColor(), randomColor(), randomColor()]} 
                                   unit="GB" 
-                                  width={400} 
-                                  height={200} 
-                                  domain={[0, 64]}
+                                  dim={[400, 200]} 
+                                  xdomain={[0, 80]}
+                                  ydomain={[0, 100]}                                  
                                   />)} />
                 </Grid>
                 <Grid item xs>
-                  <InfomationCard title="Resource" content="CPU Resource" media={(
+                  <InfomationCard title="Resource" content="CPU Usage" media={(
                       <LineChart type="cpu" 
-                                  element={["processCpuLoad", "systemCpuLoad"]} 
+                                  element={["CpuLoad", "SystemCpuLoad"]} 
                                   stroke={[randomColor(), randomColor()]} 
                                   unit="PCT" 
-                                  width={400} 
-                                  height={200} 
-                                  domain={[0, 100]}
+                                  dim={[400, 200]} 
+                                  xdomain={[0, 80]}
+                                  ydomain={[0, 100]}
                                   />)} /> 
                 </Grid>
               </Grid>
