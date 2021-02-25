@@ -1,0 +1,25 @@
+.responsive__tabs ul.scrollable-tabs {
+  background-color: #54793e;
+  overflow-x: auto;
+  white-space: nowrap;
+  display: flex;
+  text-transform: uppercase;
+  flex-direction: row; 
+}
+.responsive__tabs ul.scrollable-tabs li {
+  list-style-type: none; 
+}
+.responsive__tabs ul.scrollable-tabs li a {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  font-weight: bold;
+  padding: 14px;
+  text-decoration: none; 
+}
+.responsive__tabs ul.scrollable-tabs li a:hover, .responsive__tabs ul.scrollable-tabs li a.active {
+  background-color: #819c81;
+  color: #54793e;
+  font-weight: bold; 
+}
+

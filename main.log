@@ -1,0 +1,86 @@
+[INFO][testPortaMain:24][20210224170201] 
+
+ _____  _____ ______  ______                           
+|_   _|/  __ \| ___ \ | ___ \                          
+  | |  | /  \/| |_/ / | |_/ / _ __   ___  __  __ _   _ 
+  | |  | |    |  __/  |  __/ | '__| / _ \ \ \/ /| | | |
+  | |  | \__/\| |     | |    | |   | (_) | >  < | |_| |
+  \_/   \____/\_|     \_|    |_|    \___/ /_/\_\ \__, |
+                                                  __/ |
+                                                 |___/ 
+
+                                       Writen by 9ins.    
+
+[INFO][testPortaMain:24][20210224170201] [Config] Configuration loaded from: D:\Projects\TCPProxy\config.yml
+[INFO][testPortaMain:24][20210224170219] 
+
+ _____  _____ ______  ______                           
+|_   _|/  __ \| ___ \ | ___ \                          
+  | |  | /  \/| |_/ / | |_/ / _ __   ___  __  __ _   _ 
+  | |  | |    |  __/  |  __/ | '__| / _ \ \ \/ /| | | |
+  | |  | \__/\| |     | |    | |   | (_) | >  < | |_| |
+  \_/   \____/\_|     \_|    |_|    \___/ /_/\_\ \__, |
+                                                  __/ |
+                                                 |___/ 
+
+                                       Writen by 9ins.    
+
+[INFO][testPortaMain:24][20210224170443] 
+
+ _____  _____ ______  ______                           
+|_   _|/  __ \| ___ \ | ___ \                          
+  | |  | /  \/| |_/ / | |_/ / _ __   ___  __  __ _   _ 
+  | |  | |    |  __/  |  __/ | '__| / _ \ \ \/ /| | | |
+  | |  | \__/\| |     | |    | |   | (_) | >  < | |_| |
+  \_/   \____/\_|     \_|    |_|    \___/ /_/\_\ \__, |
+                                                  __/ |
+                                                 |___/ 
+
+                                       Writen by 9ins.    
+
+[INFO][testPortaMain:24][20210224170459] 
+
+ _____  _____ ______  ______                           
+|_   _|/  __ \| ___ \ | ___ \                          
+  | |  | /  \/| |_/ / | |_/ / _ __   ___  __  __ _   _ 
+  | |  | |    |  __/  |  __/ | '__| / _ \ \ \/ /| | | |
+  | |  | \__/\| |     | |    | |   | (_) | >  < | |_| |
+  \_/   \____/\_|     \_|    |_|    \___/ /_/\_\ \__, |
+                                                  __/ |
+                                                 |___/ 
+
+                                       Writen by 9ins.    
+
+[INFO][testPortaMain:24][20210224170459] [Config] Configuration loaded from: D:\Projects\porta\config.yml
+[INFO][testPortaMain:24][20210224170459] [Thread-Pool] Thread Pool initialized. Core size: 10 Max size: 50 Idle size: 600 Waiting Queue size: 30
+[DEBUG][testPortaMain:24][20210224170459] $$ add user - admin   1234   [ADMIN, OPERATOR]
+[DEBUG][testPortaMain:24][20210224170459] $$ add user - system   1234   [MONITOR]
+[DEBUG][testPortaMain:24][20210224170459] $$ add user - Simple   111   [ADMIN, OPERATOR]
+[DEBUG][testPortaMain:24][20210224170459] $$ add user - test   1234   [ADMIN]
+[INFO][testPortaMain:24][20210224170500] Start TCP Proxy... Local Host : 9ins/192.168.1.17
+[INFO][Thread:834][20210224170500] [kafka] [Session type: STAND_ALONE] Proxy server waiting [Port] : 8092   Target: [192.168.1.152:8092]
+[INFO][Thread:834][20210224170500] [oracle] [Session type: STAND_ALONE] Proxy server waiting [Port] : 1521   Target: [192.168.1.157:1521]
+[INFO][Thread:834][20210224170500] [mysql] [Session type: LOAD_BALANCE_ROUND_ROBIN] Proxy server waiting [Port] : 9336   Target: [192.168.1.157:9336, 192.168.1.157:9336, 192.168.1.157:9336]
+[INFO][testPortaMain:24][20210225100001] 
+
+ _____  _____ ______  ______                           
+|_   _|/  __ \| ___ \ | ___ \                          
+  | |  | /  \/| |_/ / | |_/ / _ __   ___  __  __ _   _ 
+  | |  | |    |  __/  |  __/ | '__| / _ \ \ \/ /| | | |
+  | |  | \__/\| |     | |    | |   | (_) | >  < | |_| |
+  \_/   \____/\_|     \_|    |_|    \___/ /_/\_\ \__, |
+                                                  __/ |
+                                                 |___/ 
+
+                                       Writen by 9ins.    
+
+[INFO][testPortaMain:24][20210225100001] [Config] Configuration loaded from: D:\Projects\porta\config.yml
+[INFO][testPortaMain:24][20210225100001] [Thread-Pool] Thread Pool initialized. Core size: 10 Max size: 50 Idle size: 600 Waiting Queue size: 30
+[DEBUG][testPortaMain:24][20210225100001] $$ add user - admin   1234   [ADMIN, OPERATOR]
+[DEBUG][testPortaMain:24][20210225100001] $$ add user - system   1234   [MONITOR]
+[DEBUG][testPortaMain:24][20210225100001] $$ add user - Simple   111   [ADMIN, OPERATOR]
+[DEBUG][testPortaMain:24][20210225100001] $$ add user - test   1234   [ADMIN]
+[INFO][testPortaMain:24][20210225100002] Start TCP Proxy... Local Host : 9ins/192.168.128.1
+[INFO][Thread:834][20210225100002] [oracle] [Session type: STAND_ALONE] Proxy server waiting [Port] : 1521   Target: [192.168.1.157:1521]
+[INFO][Thread:834][20210225100002] [kafka] [Session type: STAND_ALONE] Proxy server waiting [Port] : 8092   Target: [192.168.1.152:8092]
+[INFO][Thread:834][20210225100002] [mysql] [Session type: LOAD_BALANCE_ROUND_ROBIN] Proxy server waiting [Port] : 9336   Target: [192.168.1.157:9336, 192.168.1.157:9336, 192.168.1.157:9336]
