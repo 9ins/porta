@@ -55,7 +55,7 @@ class Login extends React.Component {
             */
         };
         //alert(requestOptions.body);
-        fetch('http://localhost:3232/login', requestOptions)
+        fetch('/login', requestOptions)
             .then(response => response.json())
             .then(data => {
                 this.setState({

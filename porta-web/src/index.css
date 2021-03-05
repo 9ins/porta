@@ -19,7 +19,7 @@ code {
   box-sizing: border-box;
 }
 body {
-  background: #819c81 !important;
+  background: white !important;
   min-height: 100vh;
   display: flex;
   font-weight: 400;

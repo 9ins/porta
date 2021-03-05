@@ -49,7 +49,7 @@ class LineChart extends Component {
                         })
                     }
                 });
-        }, 500);
+        }, 3000);
     }
 
     componentWillUnmount() {

@@ -73,7 +73,7 @@ public class ResourceUsageServlet extends HttpServlet {
                 Logger.getInstance().throwable(e);
             }
         } else {
-            map.put("type", "request error");
+            map.put("type", "REQUEST_ERROR");
             map.put("msg", "Requested type: "+type+" was having wrong value. Resource request type just be allowed of 'memory' or 'cpu'.");
         }
         response.setContentType("application/json");

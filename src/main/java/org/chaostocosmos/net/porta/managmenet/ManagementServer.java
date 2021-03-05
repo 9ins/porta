@@ -90,13 +90,13 @@ public class ManagementServer {
 		Path resourcePath = Paths.get(this.configHandler.getConfig().getManagementResourceBase());
 
 		WebAppContext webAppContext = new WebAppContext();
+		webAppContext.setContextPath("/");
 		webAppContext.setResourceBase(resourcePath.toString());		
 		webAppContext.setSessionHandler(new SessionHandler());
 		LoginServlet mServlet = new LoginServlet(this.portaMain);		
 		ServletHolder servletHolder = new ServletHolder(mServlet);		
 		webAppContext.addServlet(servletHolder, "/login/*");
 		webAppContext.setWelcomeFiles(new String[] { "index.html" });
-		webAppContext.setContextPath("/");
 
 		//WebAppContext webAppContext2 = new WebAppContext();
 		//webAppContext2.setResourceBase(resourcePath.toString());		

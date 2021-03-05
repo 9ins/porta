@@ -9,13 +9,11 @@ import org.chaostocosmos.net.porta.Logger;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 public class LoginFilter implements Filter {
-    
 
     @Override
     public void doFilter(jakarta.servlet.ServletRequest req, jakarta.servlet.ServletResponse res, FilterChain chain) throws IOException, jakarta.servlet.ServletException {
@@ -34,9 +32,7 @@ public class LoginFilter implements Filter {
         if(request.getHeader("username") != null) {
             System.out.println("&&&&&&&&&&&&&&&&&&&&&################");
             chain.doFilter(request, response);
-
-        } 
-        /*
+        } /*
         if (session == null || session.getAttribute("username") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
         } else {

@@ -6,6 +6,7 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import { makeStyles } from "@material-ui/core/styles";
+import { withStyles } from '@material-ui/core/styles';
 import InfomationCard from "./InformationCard";
 import Grid from '@material-ui/core/Grid'
 
@@ -72,10 +73,27 @@ const dark_grey = randomColor({
 });
 
 
-const useStyles = makeStyles({
-  root: {
-    boxShadow: "none",
-    backgroundColor: "#cccccc"
+const styles = theme => ({
+  title: {
+    fontSize: 16,        
+    fontStyle: 'bold',
+    color: '#5eaaa8',
+    backgroundColor: 'white',
+    paddingTop: 10, 
+    paddingBottom: 10,
+  },
+  appbar : {
+    backgroundColor: '#276678',
+  },
+  tabindicator: {
+    height: '3px',
+    backgroundColor: 'white',
+  },
+  tabpanel : {
+    backgroundColor: 'white'
+  },
+  root : {
+    backgroundColor: "white",
   }
 });
 
@@ -83,36 +101,47 @@ class Dashboard extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {      
+    this.state = {
       value: 0,
     }
   }
 
   componentDidMount() {
+    this.setIntervalId = setInterval(() => {
+      const requestOptions = {
+          method: 'GET',
+          headers: {
+              'Content-Type': 'application/json',
+              'username': 'admin'
+          },
+      };
+      fetch("/resources?type=" + this.props.type + "&unit=" + this.props.unit, requestOptions)
+          .then(response => response.json())
+          .then(json => {
+          });
+    }, 3000);
   }
 
   handleChange = (event, newValue) => {
     this.setState({ value: newValue });
-  }  
+  }
 
   render() {
+    const { classes } = this.props;
     return (
-      <div>
-        <div className="main" style={{ backgroundColor: "white", color: "#5eaaa8", paddingTop: 10, paddingBottom: 10 }}>
+      <div className={classes.tabpanel}>
+        <div className={classes.title}>
           <ThemeProvider theme={theme}>
             <Typography variant="h6" component="h5">
               <img src={Logo} width="60" height="40" />
-          Porta Management Console
-        </Typography>
+              Porta Management Console
+            </Typography>
           </ThemeProvider>
         </div>
         <div>
-          <AppBar position="static" elevation={6} style={{ backgroundColor: '#276678' }}>
+          <AppBar className={classes.appbar} position="static" elevation={6}>
             <Tabs value={this.state.value} onChange={this.handleChange} aria-label="simple tabs example" TabIndicatorProps={{
-              style: {
-                height: "6px",
-                backgroundColor: "#98ded9",
-              }
+                className : classes.tabindicator
             }}>
               <Tab label="Dash Board" />
               <Tab label="Sessions" />
@@ -121,56 +150,65 @@ class Dashboard extends Component {
               <Tab label="Settings" />
             </Tabs>
           </AppBar>
-          <Box>
-            <TabPanel value={this.state.value} index={0}>
+            <TabPanel className={classes.tabpanel} value={this.state.value} index={0}>
               <Grid container spacing={2}>
-                <Grid item xs> 
-                  <InfomationCard title="Resource" content="Memory Usage" media={(                      
-                      <LineChart type="memory" 
-                                  element={["SystemUsed", "HeapFree", "MemoryUsed"]} 
-                                  stroke={[randomColor(), randomColor(), randomColor()]} 
-                                  unit="GB" 
-                                  dim={[400, 200]} 
-                                  xdomain={[0, 80]}
-                                  ydomain={[0, 100]}                                  
-                                  />)} />
+                <Grid item xs>
+                  <InfomationCard title="Resource" content="Memory Usage" media={(
+                    <LineChart type="memory"
+                      element={["SystemUsed", "HeapFree", "MemoryUsed"]}
+                      stroke={[randomColor(), randomColor(), randomColor()]}
+                      unit="GB"
+                      dim={[400, 200]}
+                      xdomain={[0, 80]}
+                      ydomain={[0, 100]}
+                    />)} />
                 </Grid>
                 <Grid item xs>
                   <InfomationCard title="Resource" content="CPU Usage" media={(
-                      <LineChart type="cpu" 
-                                  element={["CpuLoad", "SystemCpuLoad"]} 
-                                  stroke={[randomColor(), randomColor()]} 
-                                  unit="PCT" 
-                                  dim={[400, 200]} 
-                                  xdomain={[0, 80]}
-                                  ydomain={[0, 100]}
-                                  />)} /> 
+                    <LineChart type="cpu"
+                      element={["CpuLoad", "SystemCpuLoad"]}
+                      stroke={[randomColor(), randomColor()]}
+                      unit="PCT"
+                      dim={[400, 200]}
+                      xdomain={[0, 80]}
+                      ydomain={[0, 100]}
+                    />)} />
+                </Grid>
+                <Grid item xs>
+                  <InfomationCard title="Resource" content="Session Usage" media={(
+                    <LineChart type="cpu"
+                      element={["CpuLoad", "SystemCpuLoad"]}
+                      stroke={[randomColor(), randomColor()]}
+                      unit="PCT"
+                      dim={[400, 200]}
+                      xdomain={[0, 80]}
+                      ydomain={[0, 100]}
+                    />)} />
                 </Grid>
               </Grid>
-                  {/**
-                    <Box display="flex" justifyContent="flex-end" m={2} p={3} style={{
-                    background: "lightgrey",
-                    }}>
-                    </Box>
-                  */}
+              {/**
+                <Box display="flex" justifyContent="flex-end" m={2} p={3} style={{
+                background: "lightgrey",
+                }}>
+                </Box>
+              */}
             </TabPanel>
 
             <TabPanel value={this.state.value} index={1}>
               Sessions
-      </TabPanel>
+            </TabPanel>
 
             <TabPanel value={this.state.value} index={2}>
               Analysis
-      </TabPanel>
+            </TabPanel>
 
             <TabPanel value={this.state.value} index={3}>
               Accounts
-      </TabPanel>
+            </TabPanel>
 
             <TabPanel value={this.state.value} index={4}>
               Settings
-      </TabPanel>
-          </Box>
+            </TabPanel>
         </div>
       </div>
     );
@@ -187,4 +225,4 @@ class TabPanel extends Component {
   }
 }
 
-export default Dashboard;
+export default withStyles(styles)(Dashboard);
