@@ -3,17 +3,15 @@ package org.chaostocosmos.net.porta;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.chaostocosmos.net.porta.config.ConfigHandler;
-import org.chaostocosmos.net.porta.credential.CredentialsHandler;
-import org.chaostocosmos.net.porta.managmenet.ManagementServer;
+import org.chaostocosmos.porta.properties.PropertiesHelper;
+import org.chaostocosmos.porta.web.ManagementServer;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ManagementServerTest {
 
 	Path configPath;
-    ConfigHandler configHandler;
-	CredentialsHandler credentialsHandler;
+    PropertiesHelper configHandler; 
 	
 	@Before
 	public void before_test() throws Exception {
@@ -22,10 +20,9 @@ public class ManagementServerTest {
 
 	@Test
     public void test_ManagementServer() throws Exception {
-		this.configHandler = ConfigHandler.getInstance(this.configPath);
-		Path credentialPath = Paths.get(this.configHandler.getConfig().getCredentialPath());
-		this.credentialsHandler = CredentialsHandler.getInstance(credentialPath);
-		ManagementServer server = new ManagementServer(null, this.configHandler, this.credentialsHandler);
+		this.configHandler = PropertiesHelper.getInstance(this.configPath);
+		Path credentialPath = this.configHandler.getYamlPath("credentials.yml");
+		ManagementServer server = new ManagementServer(null, this.configHandler);
 	}
 	
 	public static void main(String[] args) throws Exception {

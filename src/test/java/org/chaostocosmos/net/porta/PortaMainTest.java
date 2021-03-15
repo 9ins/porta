@@ -1,5 +1,6 @@
 package org.chaostocosmos.net.porta;
 
+import org.chaostocosmos.porta.PortaMain;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -11,11 +12,11 @@ public class PortaMainTest {
     public void before_test() {
         this.configPath = "D:\\Projects\\porta\\config.yml";
     }
-    
+
     @Test
     public void test_TCPProxy() throws Exception {
         PortaMain tcpProxy = new PortaMain(this.configPath);
-        tcpProxy.startProxy();
+        tcpProxy.start();
     }
 
     public static void main(String[] args) throws Exception {

@@ -1,0 +1,28 @@
+## Porta handlers configuration.
+
+handlers:  
+  - handlerClass: 'org.chaostocosmos.porta.web.handlers.PortaSessionHandler'
+    contextPath: '/'
+    welcomePath: 'index.js'
+    servlet :
+    - servletClass: 'org.chaostocosmos.porta.web.servlet.ResourceUsageServlet'    
+      pathSpec: '/resource'
+      httpMethod: 
+        - GET
+      paramKeys: 
+        - 'type'
+        - 'name'
+    - servletClass: 'org.chaostocosmos.porta.web.servlet.PortaSessionHandler' 
+      pathSpec: '/session'
+      httpMethod: 
+        - GET
+      paramKeys: 
+        - 'type'
+        - 'name'
+    - servletClass: ''    
+      pathSpec: ''
+      httpMethod: 
+        - GET
+      paramKeys: 
+        - 'type'
+        - 'name'

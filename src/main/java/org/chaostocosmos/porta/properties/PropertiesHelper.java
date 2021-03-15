@@ -1,0 +1,400 @@
+package org.chaostocosmos.porta.properties;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import org.chaostocosmos.porta.Context;
+import org.chaostocosmos.porta.Logger;
+import org.chaostocosmos.porta.UtilBox;
+import org.chaostocosmos.porta.properties.Messages.MSG_TYPE;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.DumperOptions.FlowStyle;
+import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.Yaml;
+
+/**
+ * 
+ * ConfigHandler - Managing configuration of Porta
+ *
+ * @author 9ins 2020. 11. 17.
+ */
+public class PropertiesHelper { 
+
+	private static PropertiesHelper propertiesHelper;
+	Logger logger = Logger.getInstance();
+	Path configsPath;
+	List<Path> configFiles;
+	Map<File, Object> configsMap = new HashMap<>();
+
+	/**
+	 * Get instance of ConfigsHelper
+	 * 
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public static PropertiesHelper getInstance() throws IOException, ClassNotFoundException {
+		return getInstance(Context.configsPath);
+	}
+
+	/**
+	 * Get instance of ConfigsHelper
+	 * 
+	 * @param configPath
+	 * @return
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public static PropertiesHelper getInstance(Path configPath) throws IOException, ClassNotFoundException {
+		if (propertiesHelper == null) {
+			if(!configPath.toFile().isDirectory()) {
+				throw new IllegalArgumentException("Config path must be directory!!! Specified path is "+configPath.toString());
+			}
+			propertiesHelper = new PropertiesHelper(configPath);
+		}
+		return propertiesHelper;
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param configPath
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	private PropertiesHelper(Path configPath) throws IOException, ClassNotFoundException {
+		this.configsPath = configPath;
+		loadYamlPaths();
+		loadConfig(); 
+		logger.info(("[Config] Configuration loaded from: " + configPath.toString()));
+	}
+
+	/**
+	 * Load yaml path list
+	 * @throws IOException
+	 */
+	private void loadYamlPaths() throws IOException {
+		this.configFiles = Files.walk(this.configsPath).filter(p -> p.toFile().getName().endsWith(".yml")).collect(Collectors.toList());
+	}
+
+	/**
+	 * Load config.yml
+	 * @throws FileNotFoundException
+	 * @throws ClassNotFoundException
+	 */
+	public void loadConfig() throws FileNotFoundException, ClassNotFoundException {
+		loadConfig(this.configFiles);
+	}
+
+	/**
+	 * Load config.yml
+	 * @param configPath
+	 * @throws ClassNotFoundException
+	 * @throws FileNotFoundException
+	 */
+	public void loadConfig(List<Path> configPath) throws ClassNotFoundException, FileNotFoundException {
+		System.out.println(configPath.toString());
+		for(Path path : configPath) {
+			String fname = path.toFile().getName(); 
+			String className = (fname.charAt(0)+"").toUpperCase()+fname.subSequence(1, fname.lastIndexOf("."));
+			String cname = this.getClass().getPackage().getName()+"."+className;
+			Class cls = Class.forName(cname);
+			Constructor constructor = new Constructor(cls);
+			Yaml yaml = new Yaml(constructor);
+			Object obj = yaml.load(new FileInputStream(path.toFile()));
+			this.configsMap.put(path.toFile(), obj);
+		}
+	}
+
+	/**
+	 * Dump config to config.yml
+	 * 
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws IOException
+	 */
+	public void dumpConfigs() throws IllegalArgumentException, IllegalAccessException, IOException {
+		dumpConfigs(this.configsPath);
+	}
+
+	/**
+	 * Dump yaml files
+	 * 
+	 * @param configPath
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws IOException
+	 */
+	public void dumpConfigs(Path configPath) throws IllegalArgumentException, IllegalAccessException, IOException {
+		for(Map.Entry<File, Object> entry : this.configsMap.entrySet()) {
+			dump(entry.getKey(), entry.getValue());
+		}
+	}
+
+	/**
+	 * Dump to file
+	 * @param file
+	 * @param obj
+	 * @throws IOException
+	 */
+	public void dump(File file, Object obj) throws IOException {
+		DumperOptions options = new DumperOptions();
+		options.setDefaultFlowStyle(FlowStyle.BLOCK);
+		options.setPrettyFlow(true);
+		Yaml yml = new Yaml(options);
+		yml.dump(obj, new FileWriter(file));
+	}
+
+	/**
+	 * Get Yaml object
+	 * @param yamlFileName
+	 * @return
+	 */
+	public Object getYamlObject(String yamlFileName) {
+		File file = this.configsMap.keySet().stream().filter(f -> f.getName().equals(yamlFileName)).findAny().orElse(null);
+		if(file == null) {
+			throw new RuntimeException("There isn't exist credentials.yml. Please check it.");
+		}
+		return this.configsMap.get(file);
+	}
+
+	/**
+	 * Get Yaml file path
+	 * @param yamlFileName
+	 * @return
+	 */
+	public Path getYamlPath(String yamlFileName) {
+		return ((File)getYamlObject(yamlFileName)).toPath();
+	}
+
+	/**
+	 * Get Credentials object
+	 * @return
+	 */
+	public Credentials getCredentials() {
+		return (Credentials)getYamlObject("credentials.yml");
+	}
+
+	/**
+	 * Get Configs object
+	 * @return
+	 */
+	public Configs getConfigs() {
+		return (Configs)getYamlObject("configs.yml");
+	}
+
+	/**
+	 * Get Handler object
+	 * @return
+	 */
+	public Handlers getHandlers() {
+		return (Handlers)getYamlObject("handlers.yml");
+	}
+
+	/**
+	 * Get Messages object
+	 * @return
+	 */
+	public Messages getMessages() {
+		return (Messages)getYamlObject("messages.yml");
+	}
+
+	/**
+	 * Get super user
+	 * @return
+	 */
+	public String getSuperUser() {			
+		return getCredentials().getSuperUser();
+	}
+	
+	/**
+	 * Get super password
+	 * @return
+	 */
+	public String getSuperPassword() {
+		return getCredentials().getSuperPassword();
+	}
+	
+	/**
+	 * Whether specified user and password is super user.
+	 * @param user
+	 * @param password
+	 * @return
+	 */
+	public boolean isSuperUser(String user, String password) {
+		Credentials credentials = getCredentials();
+		if(user.equals(credentials.getSuperUser()) && password.equals(credentials.getSuperPassword())) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get Credential object matching with specified user and password.
+	 * @param user
+	 * @param password
+	 * @return
+	 */
+	public Credential isValidUser(final String user, final String password) {
+		Credentials credentials = getCredentials();
+		List<Session> sessions = credentials.getSessions();
+		for(Session session : sessions) {
+			Credential credential = session.getCredential().stream().filter(c -> c.getUsername().equals(user) && c.getPassword().equals(password)).findAny().orElse(null);
+			if(credential != null) {
+				return credential;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Get session mapping object by session name
+	 * @param sessionName
+	 * @return
+	 */
+	public SessionMappingConfigs getSessionMapping(String sessionName) {		
+		return getConfigs().getSessionMapping().get(sessionName);
+	}
+
+	/**
+	 * Get session mapping object by source address and target port
+	 * @param inetAddress
+	 * @return
+	 */
+	public String getSessionName(Socket socket) {
+		for (Entry<String, SessionMappingConfigs> entry : getConfigs().getSessionMapping().entrySet()) {
+			String name = entry.getKey();
+			SessionMappingConfigs sm = entry.getValue();
+			if (sm.getAllowedHosts().stream().anyMatch(a -> a.equals(socket.getInetAddress().getHostAddress()))) {
+				System.out.println("NAME: " + name);
+				return name;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Set session mapping object field value by name and value.
+	 * 
+	 * @param sessionName
+	 * @param fieldName
+	 * @param value
+	 * @throws NoSuchFieldException
+	 * @throws SecurityException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	public void setSessionMappingValue(String sessionName, String fieldName, Object value) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		SessionMappingConfigs sm = getSessionMapping(sessionName);
+		Field field = sm.getClass().getDeclaredField(fieldName);
+		field.set(sm, value);
+	}
+    /**
+     * Get system message by key
+     * 
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     */
+    public String getSystemMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        return getMessage(Messages.MSG_TYPE.system, msgKey, params);
+    }
+
+    /**
+     * Get information message by key
+     * 
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws SecurityException
+     * @throws NoSuchMethodException
+     */
+    public String getInformationMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        return getMessage(Messages.MSG_TYPE.information, msgKey, params);
+    }
+
+    /**
+     * Get error message by key
+     * 
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws SecurityException
+     * @throws NoSuchMethodException
+     */
+    public String getErrorMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        return getMessage(Messages.MSG_TYPE.error, msgKey, params);
+    }
+
+    /**
+     * 
+     * @param msgType
+     * @param params
+     * @return
+     * @throws SecurityException
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     */
+    public String getMessage(Messages.MSG_TYPE msgType, String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {     
+		Messages messages = getMessages();
+		String methodName = "get"+msgType.name().substring(0, 1).toUpperCase()+msgType.name().substring(1);
+		System.out.println(methodName);
+		Class[] classes = Arrays.stream(params).map(s -> s.getClass()).collect(Collectors.toList()).toArray(new Class[0]);
+		Method method = messages.getClass().getMethod(methodName, null);
+		String message = ((Map)method.invoke(messages, null)).get(msgKey)+"";
+		AtomicInteger idx = new AtomicInteger();
+		return Arrays.stream(message.split("[$]")).map(s -> s+params[idx.getAndIncrement()]).collect(Collectors.joining());
+	}
+
+    /**
+     * Get error json
+     * @param msgKey
+     * @param params
+     * @return
+     * @throws InvocationTargetException
+     * @throws IllegalArgumentException
+     * @throws IllegalAccessException
+     * @throws SecurityException
+     * @throws NoSuchMethodException
+     */
+    public String getErrorJson(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("ERROR_CODE", msgKey);
+        map.put("ERROR_MSG", getMessage(MSG_TYPE.error, msgKey, params));
+        return UtilBox.getMapToJson(map);
+    }
+
+	public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException, IOException, NoSuchFieldException, SecurityException, ClassNotFoundException {
+		Path path = Paths.get("./config.yml");
+		PropertiesHelper handler = new PropertiesHelper(path);
+		// handler.loadConfig();
+		// System.out.println("ADMIN: "+handler.getAdminUser());
+		// System.out.println("PASSWD: "+handler.getAdminPassword());
+		// System.out.println("ORACLE:
+		// "+handler.getSessionMapping("Oracle").toString());
+		// handler.setSessionMappingValue("Oracle", "readTimeout", new Integer(150));
+		String msg = "{\"simpleMessage\":[\""+""+"\"], \"toChannel\":[\"202020\"]}";
+	}
+}

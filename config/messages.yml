@@ -1,0 +1,18 @@
+## Porta messages configuration
+
+system:
+  SYSCODE001: 
+  SYSCODE002: 
+
+information:
+  INFOCODE001: 
+  INFOCODE002: 
+
+debug: 
+  DEBUG001: 
+
+error:
+  ERRCODE001: Requested type - $ was having wrong value. Resource request type just be allowed of memory or cpu.
+  ERRCODE002: 
+
+
