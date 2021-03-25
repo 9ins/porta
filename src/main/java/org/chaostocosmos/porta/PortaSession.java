@@ -15,7 +15,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.chaostocosmos.porta.properties.ConfigException;
+import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.properties.SessionMappingConfigs;
 
 /**
@@ -40,7 +40,7 @@ public class PortaSession implements Runnable {
 	boolean slaveSessionFailed = false;
 	Map<Integer, Boolean> loadBalancedStatus;
 	long totalSuccessCount, totalFailCount;
-	long sessionStartMillis, sessionCurrentMillis;
+	long sessionStartMillis, sessionCurrentMillis;	
 
 	/**
 	 * Constructor
@@ -77,7 +77,9 @@ public class PortaSession implements Runnable {
 	 */
 	public void closeSession() throws IOException, InterruptedException {
 		closeAllChannels();
-		this.proxyServer.close();
+		if(this.proxyServer != null) {
+			this.proxyServer.close();
+		}
 	}
 
 	/**
@@ -130,13 +132,13 @@ public class PortaSession implements Runnable {
 
 	@Override
 	public void run() {
-		logger.info("[" + sessionName + "] [Session type: " + sessionMapping.getSessionModeEnum().name()
-				+ "] Proxy server waiting [Port] : " + sessionMapping.getPort() + "   Target: "
-				+ sessionMapping.getRemoteHosts().toString());
 		try {
-			this.proxyServer = new ServerSocket(this.sessionMapping.getPort(), 100,
+			logger.info("[" + sessionName + "] [Session type: " + sessionMapping.getSessionModeEnum().name()
+			+ "] Proxy server waiting [Port] : " + sessionMapping.getPort() + "   Target: "
+			+ sessionMapping.getRemoteHosts().toString());
+		this.proxyServer = new ServerSocket(this.sessionMapping.getPort(), 100,
 					InetAddress.getByName(sessionMapping.getBindAddress()));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.throwable(e);
 			return;
 		}
@@ -256,11 +258,11 @@ public class PortaSession implements Runnable {
 		 * @param sm
 		 * @return
 		 * @throws IOException
-		 * @throws ConfigException
+		 * @throws PortaException
 		 * @throws SocketException
 		 */
 		public PortaSocket createProxySocket(SessionMappingConfigs sm, int sessionIndex)
-				throws ConfigException, SocketException {
+				throws PortaException, SocketException {
 			return new PortaSocket(sm, sessionIndex);
 		}
 
@@ -272,7 +274,7 @@ public class PortaSession implements Runnable {
 				switch (sessionMapping.getSessionModeEnum()) {
 				case STAND_ALONE:
 					if (remotes.size() != 1) {
-						throw new ConfigException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName
+						throw new PortaException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName
 								+ "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()
 								+ "] Stand Alone session must have just one remote channel. Check the seesion configuration in config yaml!!!");
 					}
@@ -309,7 +311,7 @@ public class PortaSession implements Runnable {
 					slaveSessionFailed = false;
 				case HIGI_AVAILABLE_FAIL_OVER:
 					if (remotes.size() != 2) {
-						throw new ConfigException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName
+						throw new PortaException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName
 								+ "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()
 								+ "] HA Fail Over session must have just two remote channel. Check the seesion configuration in config yaml!!!");
 					}
@@ -501,7 +503,7 @@ public class PortaSession implements Runnable {
 				int read;
 				while ((read = this.is.read(buffer)) > 0) {
 					if (total < 1024) {
-						System.out.println(new String(buffer));
+						//System.out.println(new String(buffer));
 					}
 					os.write(buffer, 0, read);
 					os.flush();

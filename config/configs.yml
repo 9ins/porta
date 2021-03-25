@@ -2,18 +2,19 @@
 
 appConfigs: 
     name: Porta
-    version: 1.0.0    
+    version: 1.0.0
+    statisticsProbeMillis: 1000
 
 managementConfigs:
     managementActivation: true
     managementAddress: localhost
     managementPort: 3232
-    managementResourceBase: ./porta-www/build
+    managementResourceBase: ./porta-web
 
 threadPoolConfigs:
     threadPoolCoreSize: 10
     threadPoolMaxSize: 50
-    threadPoolIdleSecond: 600
+    threadPoolIdleSecond: 10
     threadPoolQueueSize: 30
 
 sessionMappingConfigs:

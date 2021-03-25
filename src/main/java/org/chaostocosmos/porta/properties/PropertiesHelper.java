@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.Logger;
+import org.chaostocosmos.porta.PortaMain;
 import org.chaostocosmos.porta.UtilBox;
 import org.chaostocosmos.porta.properties.Messages.MSG_TYPE;
 import org.yaml.snakeyaml.DumperOptions;
@@ -51,8 +51,8 @@ public class PropertiesHelper {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static PropertiesHelper getInstance() throws IOException, ClassNotFoundException {
-		return getInstance(Context.configsPath);
+	public static PropertiesHelper getInstance() {
+		return getInstance(PortaMain.configPath);
 	}
 
 	/**
@@ -63,7 +63,7 @@ public class PropertiesHelper {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public static PropertiesHelper getInstance(Path configPath) throws IOException, ClassNotFoundException {
+	public static PropertiesHelper getInstance(Path configPath) {
 		if (propertiesHelper == null) {
 			if(!configPath.toFile().isDirectory()) {
 				throw new IllegalArgumentException("Config path must be directory!!! Specified path is "+configPath.toString());
@@ -80,10 +80,14 @@ public class PropertiesHelper {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	private PropertiesHelper(Path configPath) throws IOException, ClassNotFoundException {
+	private PropertiesHelper(Path configPath) {
 		this.configsPath = configPath;
-		loadYamlPaths();
-		loadConfig(); 
+		try {
+			loadYamlPaths();
+			loadConfig(); 
+		} catch (IOException | ClassNotFoundException e) {
+			logger.throwable(e);
+		}
 		logger.info(("[Config] Configuration loaded from: " + configPath.toString()));
 	}
 
@@ -111,7 +115,6 @@ public class PropertiesHelper {
 	 * @throws FileNotFoundException
 	 */
 	public void loadConfig(List<Path> configPath) throws ClassNotFoundException, FileNotFoundException {
-		System.out.println(configPath.toString());
 		for(Path path : configPath) {
 			String fname = path.toFile().getName(); 
 			String className = (fname.charAt(0)+"").toUpperCase()+fname.subSequence(1, fname.lastIndexOf("."));
@@ -182,7 +185,7 @@ public class PropertiesHelper {
 	 * @return
 	 */
 	public Path getYamlPath(String yamlFileName) {
-		return ((File)getYamlObject(yamlFileName)).toPath();
+		return this.configFiles.stream().filter(p -> p.toFile().getName().equals(yamlFileName)).findAny().orElse(null);
 	}
 
 	/**
@@ -314,7 +317,7 @@ public class PropertiesHelper {
      * @throws InvocationTargetException
      * @throws IllegalArgumentException
      */
-    public String getSystemMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public String getSystemMessage(String msgKey, String... params) {
         return getMessage(Messages.MSG_TYPE.system, msgKey, params);
     }
 
@@ -328,7 +331,7 @@ public class PropertiesHelper {
      * @throws SecurityException
      * @throws NoSuchMethodException
      */
-    public String getInformationMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public String getInformationMessage(String msgKey, String... params) {
         return getMessage(Messages.MSG_TYPE.information, msgKey, params);
     }
 
@@ -342,7 +345,7 @@ public class PropertiesHelper {
      * @throws SecurityException
      * @throws NoSuchMethodException
      */
-    public String getErrorMessage(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public String getErrorMessage(String msgKey, Object... params) {
         return getMessage(Messages.MSG_TYPE.error, msgKey, params);
     }
 
@@ -357,15 +360,34 @@ public class PropertiesHelper {
      * @throws IllegalArgumentException
      * @throws IllegalAccessException
      */
-    public String getMessage(Messages.MSG_TYPE msgType, String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {     
+    public String getMessage(Messages.MSG_TYPE msgType, String msgKey, Object... params) {     
 		Messages messages = getMessages();
 		String methodName = "get"+msgType.name().substring(0, 1).toUpperCase()+msgType.name().substring(1);
 		System.out.println(methodName);
 		Class[] classes = Arrays.stream(params).map(s -> s.getClass()).collect(Collectors.toList()).toArray(new Class[0]);
-		Method method = messages.getClass().getMethod(methodName, null);
-		String message = ((Map)method.invoke(messages, null)).get(msgKey)+"";
+		String message = null;
+		try {
+			Method method = messages.getClass().getMethod(methodName, null);
+			message = ((Map)method.invoke(messages, null)).get(msgKey)+"";
+		} catch(Exception e) {
+			Logger.getInstance().throwable(e);
+		}
 		AtomicInteger idx = new AtomicInteger();
-		return Arrays.stream(message.split("[$]")).map(s -> s+params[idx.getAndIncrement()]).collect(Collectors.joining());
+		if(params == null) {
+			return message;
+		} else {
+			String[] splited = message.split("\\$", -1);
+			String res = "";
+			if(splited.length -1  == params.length) {
+				int i;
+				for(i=0; i<splited.length-1; i++) {
+					res += splited[i];
+				}
+				return res += splited[i];
+			} else {
+				return message;
+			}
+		}
 	}
 
     /**
@@ -379,7 +401,7 @@ public class PropertiesHelper {
      * @throws SecurityException
      * @throws NoSuchMethodException
      */
-    public String getErrorJson(String msgKey, String... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    public String getErrorJson(String msgKey, Object... params) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         Map<String, String> map = new LinkedHashMap<>();
         map.put("ERROR_CODE", msgKey);
         map.put("ERROR_MSG", getMessage(MSG_TYPE.error, msgKey, params));

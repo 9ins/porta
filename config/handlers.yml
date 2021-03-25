@@ -1,28 +1,46 @@
 ## Porta handlers configuration.
 
 handlers:  
-  - handlerClass: 'org.chaostocosmos.porta.web.handlers.PortaSessionHandler'
+  - handlerClass: 'org.chaostocosmos.porta.web.handlers.PortaHandler'
     contextPath: '/'
+    resourceBase: '/porta-web/src'
     welcomePath: 'index.js'
-    servlet :
-    - servletClass: 'org.chaostocosmos.porta.web.servlet.ResourceUsageServlet'    
-      pathSpec: '/resource'
+    maxInactiveIntervalSeconds: 5
+    filters: 
+      - filterClass: 'org.chaostocosmos.porta.web.filters.LoginFilter'
+        filterPathSpec: '/*'
+        initialParams:
+          Access-Control-Allow-Origin: '*'
+          Access-Control-Allow-Methods: 'GET, POST'
+    servlets: 
+    - servletClass: 'org.chaostocosmos.porta.web.servlet.ResourceUsageServlet'
+      pathSpec: '/resources'
       httpMethod: 
         - GET
       paramKeys: 
-        - 'type'
-        - 'name'
-    - servletClass: 'org.chaostocosmos.porta.web.servlet.PortaSessionHandler' 
+        - 'type' 
+        - 'name' 
+      users: 
+        -admin
+        -system
+    - servletClass: 'org.chaostocosmos.porta.web.servlet.SessionStatusServlet' 
       pathSpec: '/session'
       httpMethod: 
         - GET
       paramKeys: 
         - 'type'
         - 'name'
-    - servletClass: ''    
-      pathSpec: ''
+      users: 
+        -admin
+        -system
+    - servletClass: 'org.chaostocosmos.porta.web.servlet.LoginServlet' 
+      pathSpec: '/login'
       httpMethod: 
         - GET
+        - POST
       paramKeys: 
-        - 'type'
-        - 'name'
+        - 'type' 
+        - 'name' 
+      users: 
+        -admin 
+        -system 

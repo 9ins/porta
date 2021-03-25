@@ -9,9 +9,14 @@ import java.util.Arrays;
 import java.util.EnumSet;
 
 import org.chaostocosmos.porta.BasicSecurityManager;
+import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.PortaMain;
 import org.chaostocosmos.porta.ResourceUtils;
 import org.chaostocosmos.porta.properties.PropertiesHelper;
+import org.chaostocosmos.porta.web.filters.LoginFilter;
+import org.chaostocosmos.porta.web.handlers.PortaHandler;
+import org.chaostocosmos.porta.web.handlers.ServletHandlerManager;
+import org.chaostocosmos.porta.web.servlet.LoginServlet;
 import org.chaostocosmos.porta.web.servlet.ResourceUsageServlet;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -35,13 +40,14 @@ import jakarta.servlet.DispatcherType;
  */
 public class ManagementServer {
 
-	PortaMain portaMain;
+	Context context;
 	Server server;
 	ServerConnector connector;
 	QueuedThreadPool threadPool;
 	BasicSecurityManager securityManager;
 	PropertiesHelper configHelper;
 	DefaultSessionIdManager sessionIdManager;
+	ServletHandlerManager servletHandlerManager;
 	HouseKeeper houseKeeper;
 
 	/**
@@ -52,9 +58,9 @@ public class ManagementServer {
 	 * @param credentialsHandler
 	 * @throws Exception
 	 */
-	public ManagementServer(PortaMain tcpProxy, PropertiesHelper configHandler_) throws Exception {
-		this.portaMain = tcpProxy;
-		this.configHelper = configHandler_;
+	public ManagementServer(Context context) throws Exception {
+		this.context = context;
+		this.configHelper = this.context.getPropertiesHelper();
 		init();
 	}
 
@@ -87,34 +93,12 @@ public class ManagementServer {
 		// Setting ManagementServelt & Handler
 		Path resourcePath = Paths.get(this.configHelper.getConfigs().getManagementConfigs().getManagementResourceBase());
 
-		WebAppContext webAppContext = new WebAppContext();
-		webAppContext.setContextPath("/");
-		webAppContext.setResourceBase(resourcePath.toString());		
-		webAppContext.setSessionHandler(new SessionHandler());
-		LoginServlet mServlet = new LoginServlet(this.portaMain);		 
-		ServletHolder servletHolder = new ServletHolder(mServlet);		
-		webAppContext.addServlet(servletHolder, "/login/*");
-		webAppContext.setWelcomeFiles(new String[] { "index.html" });
+		// initialize servlet handler manager
+		this.servletHandlerManager = new ServletHandlerManager(this.context); 
+		HandlerList handlerList = this.servletHandlerManager.getHandlerList();
 
-		//WebAppContext webAppContext2 = new WebAppContext();
-		//webAppContext2.setResourceBase(resourcePath.toString());		
-		//webAppContext2.setSessionHandler(new SessionHandler());
-		ResourceUsageServlet mServlet2 = new ResourceUsageServlet(this.portaMain);		
-		ServletHolder servletHolder2 = new ServletHolder(mServlet2);	
-					
-		FilterHolder filterHolder = new FilterHolder(LoginFilter.class);
-		filterHolder.setInitParameter("Access-Control-Allow-Origin", "*");
-		filterHolder.setInitParameter("Access-Control-Allow-Methods", "GET, POST");
-		webAppContext.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
-		webAppContext.addServlet(servletHolder2, "/resources/*");
-
-		HandlerList list = new HandlerList();
-		list.addHandler(webAppContext);
-
-		this.server.setHandler(list);
+		this.server.setHandler(handlerList);
 		Arrays.asList(this.server.getChildHandlers()).stream().forEach(h -> System.out.println(h.toString()));
-
-		webAppContext.getSessionHandler().setMaxInactiveInterval(5);
 	}
 
 	/**

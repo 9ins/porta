@@ -8,7 +8,7 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 11
 version = '1.1.1'
 
 sourceSets {
@@ -54,8 +54,8 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12' 
 
-    //runtime files('libs/ojdbc6.jar', 'libs/ojdbc6.jar')
-    //runtime fileTree(dir: 'libs', include: '*.jar')  
+    runtime files('lib/ojdbc6.jar', 'lib/ojdbc6.jar')
+    //runtime fileTree(dir: 'lib', include: '*.jar')  
 
     // https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet
     implementation group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.2.15.v20160210'

@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class DBSessionTest {
 
@@ -65,13 +64,13 @@ public class DBSessionTest {
         }
     }
 
-    public static void main(String[] args) throws InterruptedException, SQLException, ClassNotFoundException {
-        String url = "jdbc:oracle:thin:@localhost:1214:cdb1";
+    public static void main(String[] args) throws InterruptedException, SQLException, ClassNotFoundException {        
+        String url = "jdbc:oracle:thin:@localhost:1521:cdb1";
         //String url = "jdbc:oracle:thin:@192.168.1.157:1521:cdb1";
         String user = "innoquartz";
         String passwd = "znjcmdlsh12";
         String query = "select * from innoquartz.job_drill_simple";
         DBSessionTest dbTest = new DBSessionTest(1, url, user, passwd);
-        dbTest.generate(10, 0, query);
+        dbTest.generate(300, 0, query);
     }
 }

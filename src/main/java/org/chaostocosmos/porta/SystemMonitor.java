@@ -21,7 +21,6 @@ import javax.management.ReflectionException;
  */
 public class SystemMonitor {
 	
-	public static enum UNIT {QTY, PCT, B, KB, MB, GB, TB, PB, NS, MS, ML, SEC, MIN, HR, DY, WK, MO, YR};
 	public static final double PCT = 100d;
 	public static final long SEC = 1000000000L; //nano sec
 	public static final long KB = 1024;

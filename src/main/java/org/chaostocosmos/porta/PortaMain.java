@@ -31,20 +31,20 @@ import org.chaostocosmos.porta.web.ManagementServer;
  * @email chaos930@gmail.com
  */
 public class PortaMain implements AdminCommandListener {
-
+	public static PortaMain portaMain;
+	public static Path configPath;
 	Logger logger = Logger.getInstance();
-
-	Context context;
-
 	ServerSocket proxyServer;
 	ServerSocket adminServer;
 	List<AdminCommandListener> configChangeListeners;
-	Map<String, PortaSession> sessionMap;
+	Context context;
 	PortaSessionHandler sessionHandler;
-	PortaThreadPool proxyThreadPool;
+	Map<String, PortaSession> sessionMap;
+	PortaThreadPool portaThreadPool;
 	ManagementServer managementServer;
-
-	boolean isDone = false;
+	ModuleProvider moduleProvider;
+	ResourceManager resourceManager;
+	boolean isDone = false;	
 	
 	/**
 	 * Constructor
@@ -53,8 +53,9 @@ public class PortaMain implements AdminCommandListener {
 	 * @throws Exception
 	 */
 	public PortaMain(String configPath_) throws Exception {
-		Path configPath = Paths.get(configPath_);
+		configPath = Paths.get(configPath_);
 		this.context = new Context(configPath);
+		portaMain = this;
 	}
 
 	/**
@@ -75,22 +76,24 @@ public class PortaMain implements AdminCommandListener {
 	 */
 	public void start() throws IOException, InterruptedException {
 		try {
-			logger.info(Context.TRADE_MARK);
-			this.proxyThreadPool = new PortaThreadPool(Context.propertiesHelper.getConfigs().getThreadPoolConfigs().getThreadPoolCoreSize(),
-			Context.configs.getThreadPoolConfigs().getThreadPoolMaxSize(),
-			Context.configs.getThreadPoolConfigs().getThreadPoolIdleSecond(),
-			Context.configs.getThreadPoolConfigs().getThreadPoolQueueSize());
+			logger.info(this.context.getTRADE_MARK());
+			this.portaThreadPool = new PortaThreadPool(this.context.getConfigs().getThreadPoolConfigs().getThreadPoolCoreSize(),
+			this.context.getConfigs().getThreadPoolConfigs().getThreadPoolMaxSize(),
+			this.context.getConfigs().getThreadPoolConfigs().getThreadPoolIdleSecond(),
+			this.context.getConfigs().getThreadPoolConfigs().getThreadPoolQueueSize());
 			logger.info("[Thread-Pool] Thread Pool initialized. Core size: "
-					+ Context.configs.getThreadPoolConfigs().getThreadPoolCoreSize() + " Max size: "
-					+ Context.configs.getThreadPoolConfigs().getThreadPoolMaxSize() + " Idle size: "
-					+ Context.configs.getThreadPoolConfigs().getThreadPoolIdleSecond() + " Waiting Queue size: "
-					+ Context.configs.getThreadPoolConfigs().getThreadPoolQueueSize());
-			this.sessionHandler = new PortaSessionHandler(Context.propertiesHelper, this.proxyThreadPool); 
+					+ this.context.getConfigs().getThreadPoolConfigs().getThreadPoolCoreSize() + " Max size: "
+					+ this.context.getConfigs().getThreadPoolConfigs().getThreadPoolMaxSize() + " Idle size: "
+					+ this.context.getConfigs().getThreadPoolConfigs().getThreadPoolIdleSecond() + " Waiting Queue size: "
+					+ this.context.getConfigs().getThreadPoolConfigs().getThreadPoolQueueSize());
+			this.sessionHandler = new PortaSessionHandler(this.context.getPropertiesHelper(), this.portaThreadPool); 
 			this.sessionMap = this.sessionHandler.getPortaSessionMap();
-			if (Context.configs.getManagementConfigs().getManagementActivation()) {
-				this.managementServer = new ManagementServer(this, Context.propertiesHelper);
+			if (this.context.getConfigs().getManagementConfigs().getManagementActivation()) {
+				this.managementServer = new ManagementServer(this.context);
 				this.managementServer.start();
 			}
+			this.resourceManager = new ResourceManager(this);
+			this.moduleProvider = new ModuleProvider(this);
 			this.sessionHandler.start();
 		} catch (Exception e) {
 			Logger.getInstance().throwable(e);
@@ -105,7 +108,7 @@ public class PortaMain implements AdminCommandListener {
 	 */
 	public void shutdown() throws IOException, InterruptedException { 
 		closeAllSession();
-		this.proxyThreadPool.shutdown();
+		this.portaThreadPool.shutdown();
 	}
 
 	/**
@@ -130,12 +133,43 @@ public class PortaMain implements AdminCommandListener {
 	}
 
 	/**
-	 * Get proxy session handler
-	 * 
+	 * Get management server object
+	 * @return
+	 */
+	public ManagementServer getManagementServer() {
+		return this.managementServer;
+	}
+
+	/**
+	 * Get porta session handler object
 	 * @return
 	 */
 	public PortaSessionHandler getPortaSessionHandler() {
 		return this.sessionHandler;
+	}
+
+	/**
+	 * Get porta thread pool object
+	 * @return
+	 */
+	public PortaThreadPool getPortaThreadPool() {
+		return this.portaThreadPool;
+	}
+
+	/**
+	 * Get context object
+	 * @return
+	 */
+	public Context getContext() {
+		return this.context;
+	}
+
+	/**
+	 * Get resource manager
+	 * @return
+	 */
+	public ResourceManager getResourceManager() {
+		return this.resourceManager;
 	}
 
 	/**

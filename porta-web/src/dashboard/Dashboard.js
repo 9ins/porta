@@ -1,217 +1,110 @@
 import React, { Component } from 'react';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
-import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles';
-import { makeStyles } from "@material-ui/core/styles";
-import { withStyles } from '@material-ui/core/styles';
-import InfomationCard from "./InformationCard";
-import Grid from '@material-ui/core/Grid'
-
-import Logo from '../porta2.svg';
+import ChartCard from "./ChartCard";
+import Grid from '@material-ui/core/Grid';
 import LineChart from './LineChart';
-import '../responsive_tabs.css';
-import randomColor from 'randomcolor'
+import BarChart from './BarChart';
+import randomColor from 'randomcolor';
+import { withStyles } from '@material-ui/core/styles';
+import { chartCardThemes, dashboardThemes } from '../app/PortaThemes.js';
+import { PrettoSlider, ApplyButton} from '../widget/Widgets';
+import DoneOutlinedIcon from '@material-ui/icons/DoneOutlined';
+import Typography from '@material-ui/core/Typography';
+import FetchRequest from '../app/FetchRequest';
 
-
-const theme = createMuiTheme({
-  typography: {
-    /*
-    fontFamily: [
-      'Algerian',
-      'Roboto',
-      'BlinkMacSystemFont',
-      '"Segoe UI"',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-      '"Apple Color Emoji"',
-      '"Segoe UI Emoji"',
-      '"Segoe UI Symbol"',
-      '-apple-system',
-    ].join(','),
-    */
-  },
-});
-
-const light_green = randomColor({
-  luminosity: 'light',
-  hue: 'green'
-});
-
-const light_blue = randomColor({
-  luminosity: 'light',
-  hue: 'blue'
-});
-
-const light_grey = randomColor({
-  luminosity: 'light',
-  hue: 'grey'
-});
-
-const dark_green = randomColor({
-  luminosity: 'dark',
-  format: 'rgba',
-  hue: 'green',
-  alpha: 0.5
-});
-
-const dark_blue = randomColor({
-  luminosity: 'dark',
-  format: 'rgba',
-  hue: 'blue',
-  alpha: 0.5
-});
-
-const dark_grey = randomColor({
-  luminosity: 'dark',
-  format: 'rgba',
-  hue: 'grey',
-  alpha: 0.5
-});
-
-
-const styles = theme => ({
-  title: {
-    fontSize: 16,        
-    fontStyle: 'bold',
-    color: '#5eaaa8',
-    backgroundColor: 'white',
-    paddingTop: 10, 
-    paddingBottom: 10,
-  },
-  appbar : {
-    backgroundColor: '#276678',
-  },
-  tabindicator: {
-    height: '3px',
-    backgroundColor: 'white',
-  },
-  tabpanel : {
-    backgroundColor: 'white'
-  },
-  root : {
-    backgroundColor: "white",
-  }
-});
+import '../css/responsive_tabs.css';
 
 class Dashboard extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      value: 0,
-    }
   }
 
   componentDidMount() {
-    this.setIntervalId = setInterval(() => {
-      const requestOptions = {
-          method: 'GET',
-          headers: {
-              'Content-Type': 'application/json',
-              'username': 'admin'
-          },
-      };
-      fetch("/resources?type=" + this.props.type + "&unit=" + this.props.unit, requestOptions)
-          .then(response => response.json())
-          .then(json => {
-          });
-    }, 3000);
   }
 
-  handleChange = (event, newValue) => {
-    this.setState({ value: newValue });
+  componentWillUnmount() {
   }
 
   render() {
     const { classes } = this.props;
+    const bull = <span className={classes.bullet}>•</span>;
     return (
-      <div className={classes.tabpanel}>
-        <div className={classes.title}>
-          <ThemeProvider theme={theme}>
-            <Typography variant="h6" component="h5">
-              <img src={Logo} width="60" height="40" />
-              Porta Management Console
-            </Typography>
-          </ThemeProvider>
-        </div>
-        <div>
-          <AppBar className={classes.appbar} position="static" elevation={6}>
-            <Tabs value={this.state.value} onChange={this.handleChange} aria-label="simple tabs example" TabIndicatorProps={{
-                className : classes.tabindicator
-            }}>
-              <Tab label="Dash Board" />
-              <Tab label="Sessions" />
-              <Tab label="Analysis" />
-              <Tab label="Accounts" />
-              <Tab label="Settings" />
-            </Tabs>
-          </AppBar>
-            <TabPanel className={classes.tabpanel} value={this.state.value} index={0}>
-              <Grid container spacing={2}>
-                <Grid item xs>
-                  <InfomationCard title="Resource" content="Memory Usage" media={(
-                    <LineChart type="memory"
-                      element={["SystemUsed", "HeapFree", "MemoryUsed"]}
-                      stroke={[randomColor(), randomColor(), randomColor()]}
-                      unit="GB"
-                      dim={[400, 200]}
-                      xdomain={[0, 80]}
-                      ydomain={[0, 100]}
-                    />)} />
-                </Grid>
-                <Grid item xs>
-                  <InfomationCard title="Resource" content="CPU Usage" media={(
-                    <LineChart type="cpu"
-                      element={["CpuLoad", "SystemCpuLoad"]}
-                      stroke={[randomColor(), randomColor()]}
-                      unit="PCT"
-                      dim={[400, 200]}
-                      xdomain={[0, 80]}
-                      ydomain={[0, 100]}
-                    />)} />
-                </Grid>
-                <Grid item xs>
-                  <InfomationCard title="Resource" content="Session Usage" media={(
-                    <LineChart type="cpu"
-                      element={["CpuLoad", "SystemCpuLoad"]}
-                      stroke={[randomColor(), randomColor()]}
-                      unit="PCT"
-                      dim={[400, 200]}
-                      xdomain={[0, 80]}
-                      ydomain={[0, 100]}
-                    />)} />
-                </Grid>
-              </Grid>
-              {/**
-                <Box display="flex" justifyContent="flex-end" m={2} p={3} style={{
-                background: "lightgrey",
-                }}>
-                </Box>
-              */}
-            </TabPanel>
-
-            <TabPanel value={this.state.value} index={1}>
-              Sessions
-            </TabPanel>
-
-            <TabPanel value={this.state.value} index={2}>
-              Analysis
-            </TabPanel>
-
-            <TabPanel value={this.state.value} index={3}>
-              Accounts
-            </TabPanel>
-
-            <TabPanel value={this.state.value} index={4}>
-              Settings
-            </TabPanel>
-        </div>
-      </div>
-    );
+      <Grid container spacing={1} className={classes.root}>
+        <Grid item xs>
+          <ChartCard title="Resource" 
+                    message="Memory Usage"  
+                    medias={[(
+                      <LineChart type="MEMORY"
+                        element={["SystemUsed", "HeapFree", "MemoryUsed"]}
+                        label={["system used", "free heap", "porta used"]}
+                        stroke={[randomColor(), randomColor(), randomColor()]}            
+                        unit="GB"
+                        dim={[460, 200]}
+                        xdomain={[0, 80]}
+                        ydomain={[0, 100]}
+                        refreshSec={3}
+                      />)]}
+                    spacing={5}
+                    direction='column'
+          />
+        </Grid>
+        <Grid item xs>
+          <ChartCard title="Resource" 
+                    message="CPU Usage" 
+                    medias={[(
+                      <LineChart type="CPU"
+                        element={["CpuLoad", "SystemCpuLoad"]}
+                        label={["porta load", "system load"]}
+                        stroke={[randomColor(), randomColor()]}
+                        unit="PCT"
+                        dim={[460, 200]}
+                        xdomain={[0, 80]}
+                        ydomain={[0, 100]}
+                        refreshSec={3}
+                      />)]} 
+                      spacing={5}
+                      direction='column'
+          />
+        </Grid>
+        <Grid item xs>
+          <ChartCard title="Resource" 
+                    message="Thread Pool Usage" 
+                    medias={
+                      [(
+                        <Grid container spacing={1}>
+                          <Grid key={0} item xs={6}>
+                            <BarChart type="THREAD"
+                              element={["activeCount", "corePoolSize", "MaxinumPoolSize", "queueSize"]}
+                              label={["active", "core", "max", "queued"]}
+                              color={[randomColor(), randomColor(), randomColor(), randomColor()]}
+                              unit="CNT"
+                              dim={[230, 200]}
+                              dist={0}
+                              refreshSec={3}
+                            />
+                          </Grid>
+                          <Grid item xs={6} className={classes.tabpanel}>
+                            <Typography className={classes.text} id="pretto-slider" gutterBottom>
+                              Define Core Thread
+                            </Typography>
+                            <PrettoSlider valueLabelDisplay="auto" aria-labelledby="range-slider" defaultValue={20} />
+                            <ApplyButton startIcon={<DoneOutlinedIcon />}>Apply</ApplyButton>
+                            <Grid key={2} item xs={12}>
+                            <Typography className={classes.text} id="pretto-slider" gutterBottom>
+                              Define Max Thread
+                            </Typography>                      
+                            <PrettoSlider valueLabelDisplay="auto" aria-labelledby="range-slider" defaultValue={20} />
+                            <ApplyButton startIcon={<DoneOutlinedIcon />}>Apply</ApplyButton>
+                          </Grid>
+                          </Grid>
+                      </Grid>
+                      )]}
+                      spacing={5}
+                      direction='column'/>
+      </Grid>
+    </Grid>
+    )
   }
 }
 
@@ -225,4 +118,4 @@ class TabPanel extends Component {
   }
 }
 
-export default withStyles(styles)(Dashboard);
+export default withStyles(dashboardThemes)(Dashboard);

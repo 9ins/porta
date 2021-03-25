@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.SESSION_MODE;
 
 /**
@@ -168,7 +169,7 @@ public class SessionMappingConfigs implements Serializable {
 		this.loadBalanceRatio = loadBalanceRatio;
 	}
 
-	public SESSION_MODE getSessionModeEnum() throws ConfigException {
+	public SESSION_MODE getSessionModeEnum() throws PortaException {
 		if (sessionMode.equalsIgnoreCase("SA")) {
 			return SESSION_MODE.STAND_ALONE;
 		} else if (sessionMode.equalsIgnoreCase("HA_FO")) {
@@ -183,8 +184,8 @@ public class SessionMappingConfigs implements Serializable {
 			try {
 				return SESSION_MODE.valueOf(sessionMode); 
 			} catch (Exception e) {
-				throw new ConfigException("remoteMode",
-						"remoteMOde must be among STAND_ALONE / HIGH_AVAILABLE_FAIL_OVER / HIGH_AVAILABLE_FAIL_BACK / LOAD_BALANCE_ROUND_ROBIN / LOAD_BALANCE_SEPARATE_RATIO.");
+				throw new PortaException("remoteMode",
+						new Object[]{"remoteMOde must be among STAND_ALONE / HIGH_AVAILABLE_FAIL_OVER / HIGH_AVAILABLE_FAIL_BACK / LOAD_BALANCE_ROUND_ROBIN / LOAD_BALANCE_SEPARATE_RATIO."});
 			}
 		}
 	}
@@ -193,12 +194,13 @@ public class SessionMappingConfigs implements Serializable {
 	 * Get load balance ratio list.
 	 * 
 	 * @return
+	 * @throws PortaException
 	 */
-	public List<Float> getLoadBalanceRatioList() {
+	public List<Float> getLoadBalanceRatioList() throws PortaException {
 		if (loadBalanceRatio == null || remoteHosts.size() == 0
 				|| remoteHosts.size() != loadBalanceRatio.split(":").length) {
-			throw new ConfigException("loadBalanceRatio",
-					"It must be same count between remote hosts count and Load-Balanced Ratio tokens in LOAD_BALANCE_SEPARATE_RATIO mode.");
+			throw new PortaException("loadBalanceRatio",
+					new Object[]{"It must be same count between remote hosts count and Load-Balanced Ratio tokens in LOAD_BALANCE_SEPARATE_RATIO mode."});
 		}
 		return Arrays.asList(loadBalanceRatio.split(":")).stream().map(f -> Float.parseFloat(f))
 				.collect(Collectors.toList());

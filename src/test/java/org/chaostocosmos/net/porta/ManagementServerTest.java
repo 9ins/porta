@@ -3,6 +3,7 @@ package org.chaostocosmos.net.porta;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.properties.PropertiesHelper;
 import org.chaostocosmos.porta.web.ManagementServer;
 import org.junit.Before;
@@ -15,14 +16,14 @@ public class ManagementServerTest {
 	
 	@Before
 	public void before_test() throws Exception {
-		this.configPath = Paths.get("D:/Projects/TCPProxy/config.yml");
+		this.configPath = Paths.get("D:/Projects/porta/config");
 	}
 
 	@Test
     public void test_ManagementServer() throws Exception {
 		this.configHandler = PropertiesHelper.getInstance(this.configPath);
 		Path credentialPath = this.configHandler.getYamlPath("credentials.yml");
-		ManagementServer server = new ManagementServer(null, this.configHandler);
+		ManagementServer server = new ManagementServer(new Context(configPath));
 	}
 	
 	public static void main(String[] args) throws Exception {

@@ -7,6 +7,7 @@ public class AppConfigs {
 
     String name;
     String version;
+    long statisticsProbeMillis;
     
     public AppConfigs() {
     }
@@ -27,11 +28,20 @@ public class AppConfigs {
         this.version = version;
     }
 
+    public long getStatisticsProbeMillis() {
+        return this.statisticsProbeMillis;
+    }
+
+    public void setStatisticsProbeMillis(long statisticsProbeMillis) {
+        this.statisticsProbeMillis = statisticsProbeMillis;
+    }
+
     @Override
     public String toString() {
         return "{" +
             " name='" + name + "'" +
             ", version='" + version + "'" +
+            ", statisticsProbeMillis='" + statisticsProbeMillis + "'" +
             "}";
     }
 }

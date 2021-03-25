@@ -1,14 +1,19 @@
 package org.chaostocosmos.porta.web.servlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.chaostocosmos.porta.PortaMain;
+import org.chaostocosmos.porta.Context;
+import org.chaostocosmos.porta.properties.Credentials;
+import org.chaostocosmos.porta.properties.Messages;
+import org.chaostocosmos.porta.web.HTTP.METHOD;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -16,18 +21,19 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ManagementServlet extends HttpServlet {
+public class ManagementServlet extends AbstractHttpServlet {
 
-    PortaMain tcpProxy;
+    Context context;
     String sessionId = "";
 
     Map<String, Long> sessionIdMap = new HashMap<>();
 
-    public ManagementServlet(PortaMain tcpProxy) {
-        this.tcpProxy = tcpProxy;
+    public ManagementServlet(Context context, List<METHOD> methods, List<String> paramKeys, Credentials credentials) {
+        super(context, methods, paramKeys, credentials);
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    @Override
+    public Map<Object, Object> toDoGet(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, Credentials credentials, Messages messages) throws ServletException, IOException {
         printRqeust(request);
         System.out.println("Session id: "+request.getSession().getId());
         System.out.println("Request id: "+request.getRequestedSessionId());
@@ -38,7 +44,7 @@ public class ManagementServlet extends HttpServlet {
         if(lastTimeMillis != null && lastTimeMillis+5000 < System.currentTimeMillis()) {
             request.logout();
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            return null;
         }        
         sessionIdMap.put(requestId, System.currentTimeMillis());
         Cookie cookie = new Cookie("JSESSIONID", request.getSession().getId());
@@ -47,6 +53,25 @@ public class ManagementServlet extends HttpServlet {
         response.setContentType("text/html");
         response.setStatus(HttpServletResponse.SC_OK);
         response.getWriter().println(Files.readAllLines(Paths.get("D:\\Projects\\TCPProxy\\porta-www\\build\\index.html")).stream().map(l -> l).collect(Collectors.joining(System.lineSeparator())));
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body,
+            Credentials credentials, Messages messages) throws ServletException, IOException {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json,
+            Credentials credentials, Messages messages) throws ServletException, IOException {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file,
+            Credentials credentials, Messages messages) throws ServletException, IOException {
+        return null;
     }
 
     protected void printRqeust(HttpServletRequest request) {
@@ -72,5 +97,4 @@ public class ManagementServlet extends HttpServlet {
             "user: "+request.getParameter("username") +"   \n"
             );
     }
-
 }

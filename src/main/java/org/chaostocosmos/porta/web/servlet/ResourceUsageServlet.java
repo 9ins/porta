@@ -1,104 +1,105 @@
 package org.chaostocosmos.porta.web.servlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
 
+import org.chaostocosmos.porta.Context;
+import org.chaostocosmos.porta.IResourceUsage;
 import org.chaostocosmos.porta.Logger;
-import org.chaostocosmos.porta.PortaMain;
-import org.chaostocosmos.porta.SystemMonitor;
-import org.chaostocosmos.porta.SystemMonitor.UNIT;
-import org.chaostocosmos.porta.properties.PropertiesHelper;
-import org.chaostocosmos.porta.properties.Messages.MSG_TYPE;
+import org.chaostocosmos.porta.ModuleProvider;
+import org.chaostocosmos.porta.UNIT;
+import org.chaostocosmos.porta.PortaException;
+import org.chaostocosmos.porta.RESOURCE;
+import org.chaostocosmos.porta.properties.Credentials;
+import org.chaostocosmos.porta.properties.Messages;
+import org.chaostocosmos.porta.web.HTTP.METHOD;
+import org.chaostocosmos.porta.web.HTTP.RESPONSE;
+import org.chaostocosmos.porta.web.HTTP.RESPONSE_TYPE;
 
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class ResourceUsageServlet extends HttpServlet implements IResourceUsage {
+public class ResourceUsageServlet extends AbstractHttpServlet implements IResourceUsage {
 
     Gson gson = new Gson();
-    PortaMain portaMain;
+    Context context;
 
-    public ResourceUsageServlet(PortaMain portaMain) {
-        this.portaMain = portaMain;
+    /**
+     * Constructor
+     * @param context
+     * @param methods
+     * @param paramKeys
+     * @param credentials
+     */
+    public ResourceUsageServlet(Context context, List<METHOD> methods, List<String> paramKeys, Credentials credentials) {
+        super(context, methods, paramKeys, credentials);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("############# GET : "+request.getQueryString());
-        System.out.println(request.getParameterMap().toString());
-        String type = request.getParameter("type");
-        String unit = request.getParameter("unit");
-        Map<String, String> map = new LinkedHashMap<>();
-        map.put("type", type);
-        map.put("unit", unit);
-        System.out.println("TYPE: "+type);
-        String resJson = null;
+    public Map<Object, Object> toDoGet(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, Credentials credentials, Messages messages) throws ServletException, IOException {
+        RESOURCE type = RESOURCE.valueOf(request.getParameter("type"));
+        UNIT unit = UNIT.valueOf(request.getParameter("unit"));
+        Map<Object, Object> map = new LinkedHashMap<>();
         try {
             switch(type) {
-                case "cpu" :
-                    resJson = getCpuUsage(map);
+                case CPU:
+                map = getCpuUsage(unit);
                 break;
-                case "memory" :
-                    resJson = getMemoryUsage(map);
+                case MEMORY:
+                map = getMemoryUsage(unit);
+                break;
+                case THREAD:
+                map = getThreadPoolUsage(unit);
                 break;
                 default:
-                    resJson = PropertiesHelper.getInstance().getMessages().getMessage(MSG_TYPE.error, "ERRCODE001");
+                throw new PortaException("ERRCODE001", new Object[]{type});
             }
         } catch (Exception e) {
             Logger.getInstance().throwable(e);
         }
-        response.setContentType("application/json");
-        System.out.println("SUCCESS : "+resJson);
-        response.getWriter().println(resJson);
-        response.setStatus(HttpServletResponse.SC_OK);
+        paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
+        paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
+        paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
+        paramMap.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(map));
+        return paramMap;
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body, Credentials credentials, Messages messages) throws ServletException, IOException {
         Map<String, String> reqMap = gson.fromJson(request.getReader(), Map.class);
         Logger.getInstance().info("REQ MAP: "+reqMap);
-    }
-
-    @Override
-    public String getCpuUsage(Map<String, String> paramMap) throws Exception {
-        String unit = paramMap.get("unit");
-        double cpuLoad = SystemMonitor.getProcessCpuLoad(UNIT.valueOf(unit));
-        double cpuTime = SystemMonitor.getProcessCpuTime(UNIT.valueOf(unit));
-        double systemCpuLoad = SystemMonitor.getSystemCpuLoad(UNIT.valueOf(unit));
-        paramMap.put("CpuLoad", cpuLoad+"");
-        paramMap.put("CpuTime", cpuTime+"");
-        paramMap.put("SystemCpuLoad", systemCpuLoad+"");
-        return gson.toJson(paramMap);
-    }
-
-    @Override
-    public String getMemoryUsage(Map<String, String> paramsMap) throws Exception {
-        String unit = paramsMap.get("unit");
-        float totalPhysicalMemory = SystemMonitor.getTotalPhysicalMemorySize(UNIT.valueOf(unit));
-        float freePhysicalMemory = SystemMonitor.getFreePhysicalMemorySize(UNIT.valueOf(unit));
-        float usedPhysicalMemory = totalPhysicalMemory - freePhysicalMemory;
-        float maxHeapMemory = SystemMonitor.getProcessHeapMax(UNIT.valueOf(unit));
-        float usedHeapMemory = SystemMonitor.getProcessHeapUsed(UNIT.valueOf(unit));
-        float freeHeapMemory = maxHeapMemory - usedHeapMemory;
-        float usedMemory = SystemMonitor.getProcessMemoryUsed(UNIT.valueOf(unit));
-        paramsMap.put("SystemTotal", totalPhysicalMemory+"");
-        paramsMap.put("SystemFree", freePhysicalMemory+"");
-        paramsMap.put("SystemUsed", usedPhysicalMemory+"");
-        paramsMap.put("HeapMax", maxHeapMemory+"");
-        paramsMap.put("HeapUsed", usedHeapMemory+"");
-        paramsMap.put("HeapFree", freeHeapMemory+"");
-        paramsMap.put("MemoryUsed", usedMemory+"");                
-        return gson.toJson(paramsMap);
-    }
-
-    @Override
-    public String getThreadPoolUsage(Map<String, String> paramMap) throws Exception {
-        // TODO Auto-generated method stub
         return null;
-    }    
+    }
+
+    @Override
+    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> getCpuUsage(UNIT unit) throws Exception {
+        return ModuleProvider.getResourceManager().getCpuUsage(unit);
+    }
+
+    @Override
+    public Map<Object, Object> getMemoryUsage(UNIT unit) throws Exception {
+        return ModuleProvider.getResourceManager().getMemoryUsage(unit);
+    }
+
+    @Override
+    public Map<Object, Object> getThreadPoolUsage(UNIT unit) throws Exception {
+        return ModuleProvider.getResourceManager().getThreadPoolUsage(unit);
+    }   
+
 }
