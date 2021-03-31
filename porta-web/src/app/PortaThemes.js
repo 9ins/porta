@@ -44,6 +44,10 @@ export const dashboardThemes = theme => ({
     minWidth: 200,
     backgroundColor: themeColor,
   },
+  apply: {
+    align: 'right',
+    alignContent: 'right',
+  }
 });
   
 export const chartCardThemes = theme => ({

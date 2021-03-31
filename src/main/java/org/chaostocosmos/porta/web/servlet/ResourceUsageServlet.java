@@ -17,6 +17,7 @@ import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.RESOURCE;
 import org.chaostocosmos.porta.properties.Credentials;
 import org.chaostocosmos.porta.properties.Messages;
+import org.chaostocosmos.porta.properties.PropertiesHelper;
 import org.chaostocosmos.porta.web.HTTP.METHOD;
 import org.chaostocosmos.porta.web.HTTP.RESPONSE;
 import org.chaostocosmos.porta.web.HTTP.RESPONSE_TYPE;
@@ -71,19 +72,48 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
     }
 
     @Override
-    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body, Credentials credentials, Messages messages) throws ServletException, IOException {
-        Map<String, String> reqMap = gson.fromJson(request.getReader(), Map.class);
+    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String body, Credentials credentials, Messages messages) throws ServletException, IOException {                
+        System.out.println(body);
+        Map<String, String> reqMap = gson.fromJson(body, Map.class);
+
         Logger.getInstance().info("REQ MAP: "+reqMap);
-        return null;
+        return paramMap;
     }
 
     @Override
-    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
-        return null;
+    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
+        Map<String, Object> reqMap = gson.fromJson(json, Map.class);
+        RESOURCE type = RESOURCE.valueOf(request.getParameter("type"));
+        System.out.println("////////// "+reqMap.toString());
+        try {
+            switch(type) {
+                case THREAD_POOL:
+                    double coreSize = (double)reqMap.get("corePoolSize");
+                    double maxSize = (double)reqMap.get("maximumPoolSize");
+                    this.setCorePoolSize((int)coreSize);
+                    this.setMaximumPoolSize((int)maxSize);
+                    PropertiesHelper.getInstance().dump("configs");
+                break;
+                default:
+                throw new PortaException("ERRCODE001", new Object[]{type});
+            }
+        } catch (Exception e) {
+            Logger.getInstance().throwable(e);
+            paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
+            paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
+            paramMap.put(RESPONSE.RESPONSE_CONTENT, e.getMessage());
+            return paramMap;
+        }                        
+        paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
+        paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
+        paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
+        paramMap.put(RESPONSE.RESPONSE_CONTENT, "{status: ok}");
+        return paramMap;
     }
 
     @Override
-    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }
 
@@ -100,6 +130,17 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
     @Override
     public Map<Object, Object> getThreadPoolUsage(UNIT unit) throws Exception {
         return ModuleProvider.getResourceManager().getThreadPoolUsage(unit);
-    }   
+    }
 
+    @Override
+    public void setCorePoolSize(int size) throws Exception {
+        ModuleProvider.getResourceManager().setCorePoolSize(size);
+        PropertiesHelper.getInstance().getConfigs().getThreadPoolConfigs().setThreadPoolCoreSize(size);
+    }
+
+    @Override
+    public void setMaximumPoolSize(int size) throws Exception {
+        ModuleProvider.getResourceManager().setMaximumPoolSize(size);
+        PropertiesHelper.getInstance().getConfigs().getThreadPoolConfigs().setThreadPoolMaxSize(size);
+    }   
 }

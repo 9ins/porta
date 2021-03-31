@@ -4,11 +4,14 @@ import randomColor from 'randomcolor'
 import { BottomNavigation } from '@material-ui/core';
 import FetchRequest from '../app/FetchRequest';
 
+
 class BarChart extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
+            method: props.method,
+            path: props.path,
             type: props.type,
             unit: props.unit,
             dist: props.dist,
@@ -22,14 +25,15 @@ class BarChart extends Component {
                 y: 0 
             }])
         }
+        this.fetchRequest  = new FetchRequest().fetchGetBarchart;
     }
 
     componentDidMount() {
-        const fetch = new FetchRequest('/resources', 'get', 'THREAD', 'CNT', this.state.element);
-        this.state.data = fetch.fetchGet();
+        this.fetchRequest(this);
         this.setIntervalId = setInterval(() => {
-        }, this.state.refreshSec*1000);
-        
+            this.fetchRequest(this);
+        },  this.state.refreshSec * 2000);        
+        console.log(this.state.data);
     }
 
     componentWillUnmount() {

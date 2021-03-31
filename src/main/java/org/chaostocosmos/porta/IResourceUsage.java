@@ -30,4 +30,18 @@ public interface IResourceUsage {
      * @throws Exception
      */
     public Map<Object, Object> getThreadPoolUsage(UNIT unit) throws Exception;
+
+    /**
+     * Set core pool size
+     * @param size
+     * @throws Exception
+     */
+    public void setCorePoolSize(int size) throws Exception;
+
+    /**
+     * Set maxinum pool size
+     * @param size
+     * @throws Exception
+     */
+    public void setMaximumPoolSize(int size) throws Exception;
 }

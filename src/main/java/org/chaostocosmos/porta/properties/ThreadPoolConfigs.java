@@ -8,7 +8,7 @@ public class ThreadPoolConfigs {
     int threadPoolCoreSize;
     int threadPoolMaxSize;
     int threadPoolIdleSecond;
-    int threadPoolQueueSize;
+    int threadPoolQueueSize;    
     
     public ThreadPoolConfigs() {}
 

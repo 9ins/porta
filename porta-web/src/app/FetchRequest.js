@@ -1,39 +1,74 @@
 import React, { Component } from 'react';
 
-const requestOptions = {
+const requestGetOptions = {
     method: 'GET',
     headers: {
         'Content-Type': 'application/json',
         'username': 'admin'
     },
-};
+}
+
+const requestPostOptions = (body) => {
+    return { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'username': 'admin'
+        },
+        body: JSON.stringify(body),
+    }
+}
 
 class FetchRequest extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            path: props.path,
-            method: props.method,
-            type : props.type,
-            unit : props.unit,
-            element : props.element,
-            data : props.element.map((e, index) => [{ x: e, y: 0 }])
-        }
+    fetchGet = async (path, type, unit) => {
+        const response = await fetch(path + "?type=" + type + "&unit=" + unit, requestGetOptions);
+        const json =  await response.json();
+        return json;
     }
 
-    fetchGet() {
-        fetch(this.state.path+"?type=" + this.props.type + "&unit=" + this.props.unit, requestOptions)
+    fetchGetResource = async (path, type, unit, k) => {        
+        const res = await fetch(path + "?type=" + type + "&unit=" + unit, requestGetOptions);
+        const json = await res.json();
+        return json[k];
+    }
+
+    fetchGetBarchart = (callback) => {
+        fetch(callback.state.path+"?type=" + callback.state.type + "&unit=" + callback.state.unit, requestGetOptions)
         .then(response => response.json())
-        .then(json => {
-            this.setState({
-                data: this.state.element.map((e, index) => this.state.data[index] = [{x: this.state.label[index], y: json[e]}] ) 
-            })
-        });
-        return this.state.data;
+        .then(json => {            
+            callback.setState ({
+                data : callback.state.label.map( (e, index) => [{ x: e, y: Object.keys(json).filter(v => v.startsWith(e)).map(e => json[e])}] ) 
+            });
+        })
+        .catch(err => console.log(err));    
     }
 
-    fetchPost() {
+    fetchGetLinechart = (callback) => {
+        fetch(callback.state.path+"?type=" + callback.state.type + "&unit=" + callback.state.unit, requestGetOptions)
+        .then(response => response.json()) 
+        .then(json => {
+            if (callback.state.data[0].length > (callback.state.xdomain[1] - callback.state.xdomain[0])) {
+                callback.setState({
+                    data: callback.state.element.map((e, index) => callback.state.data[index].slice(1, callback.state.data[index].length).map((e, index) => ({ x: index, y: e.y })))
+                })
+            }
+            callback.setState({
+                data: callback.state.element.map((e, index) => [...callback.state.data[index], { x: callback.state.data[index][callback.state.data[index].length - 1].x + 1, y: json[e] }]
+                )}
+            )
+            if (callback.state.type == "MEMORY") {
+                callback.setState({
+                    ydomain: [0, parseInt(json.systemTotal)]
+                })
+            }
+        })
+    }
+
+    fetchPostRequest = (path, type, body) => {
+        fetch(path + "?type=" + type, requestPostOptions(body))
+        .then(response => console.log(response))
+        .catch(err => console.log(err))
     }
 }
 

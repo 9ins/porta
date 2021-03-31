@@ -1,7 +1,6 @@
 package org.chaostocosmos.porta.properties;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Configs implements Serializable {
@@ -9,10 +8,7 @@ public class Configs implements Serializable {
 	AppConfigs appConfigs;
 	ManagementConfigs managementConfigs;
 	ThreadPoolConfigs threadPoolConfigs;
-	Map<String, SessionMappingConfigs> sessionMappingConfigs = new HashMap<>();
-
-	public Configs() {
-	}
+	Map<String, SessionMappingConfigs> sessionMappingConfigs;
 
 	public AppConfigs getAppConfigs() {
 		return this.appConfigs;

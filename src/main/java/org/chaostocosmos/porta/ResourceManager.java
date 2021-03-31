@@ -103,9 +103,9 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         Map<Object, Object> map = new LinkedHashMap<>();
         map.put("type", RESOURCE.CPU);
         map.put("unit", unit);
-        map.put("CpuLoad", SystemMonitor.getProcessCpuLoad(unit));
-        map.put("CpuTime", SystemMonitor.getProcessCpuTime(unit));
-        map.put("SystemCpuLoad", SystemMonitor.getSystemCpuLoad(unit));    
+        map.put("cpuLoad", SystemMonitor.getProcessCpuLoad(unit));
+        map.put("cpuTime", SystemMonitor.getProcessCpuTime(unit));
+        map.put("systemCpuLoad", SystemMonitor.getSystemCpuLoad(unit));    
         return map;
     }
 
@@ -119,13 +119,13 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         float usedHeapMemory = SystemMonitor.getProcessHeapUsed(unit);
         float freeHeapMemory = maxHeapMemory - usedHeapMemory;
         float usedMemory = SystemMonitor.getProcessMemoryUsed(unit);
-        map.put("SystemTotal", totalPhysicalMemory);
-        map.put("SystemFree", freePhysicalMemory);
-        map.put("SystemUsed", usedPhysicalMemory);
-        map.put("HeapMax", maxHeapMemory);
-        map.put("HeapUsed", usedHeapMemory);
-        map.put("HeapFree", freeHeapMemory);
-        map.put("MemoryUsed", usedMemory);                
+        map.put("systemTotal", totalPhysicalMemory);
+        map.put("systemFree", freePhysicalMemory);
+        map.put("systemUsed", usedPhysicalMemory);
+        map.put("heapMax", maxHeapMemory);
+        map.put("heapUsed", usedHeapMemory);
+        map.put("heapFree", freeHeapMemory);
+        map.put("memoryUsed", usedMemory);                
         return map;
     }
 
@@ -135,18 +135,28 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         int activeCount = this.portaMain.getPortaThreadPool().getActiveCount();
         int corePoolSize = this.portaMain.getPortaThreadPool().getCorePoolSize();
         int largestPoolSize = this.portaMain.getPortaThreadPool().getLargestPoolSize();
-        int MaxinumPoolSize = this.portaMain.getPortaThreadPool().getMaximumPoolSize();
+        int maxinumPoolSize = this.portaMain.getPortaThreadPool().getMaximumPoolSize();
         long completedTaskCount = this.portaMain.getPortaThreadPool().getCompletedTaskCount();
         long taskCount = this.portaMain.getPortaThreadPool().getTaskCount();
         int queueSize = this.portaMain.getPortaThreadPool().getQueue().size();
         map.put("activeCount", activeCount);
         map.put("corePoolSize", corePoolSize);
         map.put("largestPoolSize", largestPoolSize);
-        map.put("MaxinumPoolSize", MaxinumPoolSize);
+        map.put("maxinumPoolSize", maxinumPoolSize);
         map.put("completedTaskCount", completedTaskCount);
         map.put("taskCount", taskCount);
-        map.put("queueSize", queueSize);            
-        System.out.println(map.toString());
+        map.put("queueSize", queueSize);
         return map;
+    }
+
+    @Override
+    public void setCorePoolSize(int size) throws Exception {
+        this.portaMain.getPortaThreadPool().setCorePoolSize(size);
+
+    }
+
+    @Override
+    public void setMaximumPoolSize(int size) throws Exception {
+        this.portaMain.getPortaThreadPool().setMaximumPoolSize(size);
     }
 }

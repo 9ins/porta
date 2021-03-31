@@ -12,7 +12,7 @@ debug:
   DEBUG001: 
 
 error:
-  ERRCODE001: 'Requested type - $ was having wrong value. Resource request type just be allowed of memory or cpu.'
+  ERRCODE001: 'Requested type - $ was having wrong type value.'
   ERRCODE002: 'There could not find handler configuration in handler.yml $'
   ERRCODE003: 'There could not find servlet configuration in handler.yml $'
   ERRCODE004: 'Response Map is null or zero size. Please define response Map on $'
@@ -20,3 +20,4 @@ error:
   ERRCODE006: 'Response resCode is not defined at return Map on $'
   ERRCODE007: 'Not supported HTTP response data type: $'
   ERRCODE008: 'Not exist resource type: $'
+  ERRCODE009: 'There is not exist configuration YAML file. name: $'

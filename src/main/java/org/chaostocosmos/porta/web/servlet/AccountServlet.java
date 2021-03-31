@@ -28,17 +28,17 @@ public class AccountServlet extends AbstractHttpServlet {
     }
 
     @Override
-    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body, Credentials credentials, Messages messages) throws ServletException, IOException {        
+    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String body, Credentials credentials, Messages messages) throws ServletException, IOException {        
         return null;
     }
 
     @Override
-    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }
 
     @Override
-    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }
     

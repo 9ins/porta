@@ -15,12 +15,6 @@ public class Credential {
     /**
      * Constructor
      */
-    public Credential() {
-    }
-
-    /**
-     * Constructor
-     */
     public Credential(String username, String password, List<String> grant) {
         this.username = username;
         this.password = password;

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Box from '@material-ui/core/Box';
-import ChartCard from "./ChartCard";
+import ChartCard from './ChartCard';
 import Grid from '@material-ui/core/Grid';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
@@ -18,12 +18,50 @@ class Dashboard extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      path: '/resources',
+      type: 'THREAD',
+      unit: "CNT",
+      corePoolSize : 0,
+      maximumPoolSize : 0,
+      queueSize: 0,
+    }
+    this.request = new FetchRequest();
   }
 
   componentDidMount() {
-  }
+    this.request.fetchGet(this.state.path, this.state.type, this.state.unit)
+    .then(json => {            
+      console.log(json);
+      this.setState ({
+        corePoolSize: json['corePoolSize'],
+        maximumPoolSize: json['maxinumPoolSize'],
+      });
+    })
+  }  
 
   componentWillUnmount() {
+    clearInterval(this.setIntervalId);
+  }  
+
+  handleCorePoolSize(v) {
+    this.setState({
+      corePoolSize: v,
+    });
+  }
+
+  handleMaximumPoolSize(v) {
+    this.setState({
+      maximumPoolSize: v,
+    })
+  }
+
+  handleApply() {
+    const body = {
+      corePoolSize : this.state.corePoolSize,
+      maximumPoolSize : this.state.maximumPoolSize,
+    }
+    this.request.fetchPostRequest(this.state.path, "THREAD_POOL", body);
   }
 
   render() {
@@ -32,14 +70,17 @@ class Dashboard extends Component {
     return (
       <Grid container spacing={1} className={classes.root}>
         <Grid item xs>
-          <ChartCard title="Resource" 
-                    message="Memory Usage"  
+          <ChartCard title='Resource' 
+                    message='Memory Usage'  
                     medias={[(
-                      <LineChart type="MEMORY"
-                        element={["SystemUsed", "HeapFree", "MemoryUsed"]}
-                        label={["system used", "free heap", "porta used"]}
-                        stroke={[randomColor(), randomColor(), randomColor()]}            
-                        unit="GB"
+                      <LineChart 
+                        method='get'
+                        path='/resources'
+                        type='MEMORY'
+                        element={['systemUsed', 'heapFree', 'memoryUsed']}
+                        label={['system', 'heapFree', 'memory']}
+                        stroke={[randomColor(), randomColor(), randomColor()]}
+                        unit='GB'
                         dim={[460, 200]}
                         xdomain={[0, 80]}
                         ydomain={[0, 100]}
@@ -50,14 +91,17 @@ class Dashboard extends Component {
           />
         </Grid>
         <Grid item xs>
-          <ChartCard title="Resource" 
-                    message="CPU Usage" 
+          <ChartCard title='Resource' 
+                    message='CPU Usage' 
                     medias={[(
-                      <LineChart type="CPU"
-                        element={["CpuLoad", "SystemCpuLoad"]}
-                        label={["porta load", "system load"]}
+                      <LineChart 
+                        method='get'
+                        path='/resources'
+                        type='CPU'
+                        unit='PCT'
+                        element={['cpuLoad', 'systemCpuLoad']}
+                        label={['cpu', 'systemCpu']}
                         stroke={[randomColor(), randomColor()]}
-                        unit="PCT"
                         dim={[460, 200]}
                         xdomain={[0, 80]}
                         ydomain={[0, 100]}
@@ -68,40 +112,48 @@ class Dashboard extends Component {
           />
         </Grid>
         <Grid item xs>
-          <ChartCard title="Resource" 
-                    message="Thread Pool Usage" 
+          <ChartCard title='Resource' 
+                    message='Thread Pool Usage' 
                     medias={
                       [(
                         <Grid container spacing={1}>
                           <Grid key={0} item xs={6}>
-                            <BarChart type="THREAD"
-                              element={["activeCount", "corePoolSize", "MaxinumPoolSize", "queueSize"]}
-                              label={["active", "core", "max", "queued"]}
+                            <BarChart 
+                              method='get'
+                              path='/resources'
+                              type='THREAD'
+                              unit='CNT'
+                              element={['activeCount', 'corePoolSize', 'maxinumPoolSize', 'queueSize']}
+                              label={['active', 'core', 'max', 'queued']}
                               color={[randomColor(), randomColor(), randomColor(), randomColor()]}
-                              unit="CNT"
                               dim={[230, 200]}
                               dist={0}
                               refreshSec={3}
                             />
                           </Grid>
-                          <Grid item xs={6} className={classes.tabpanel}>
-                            <Typography className={classes.text} id="pretto-slider" gutterBottom>
-                              Define Core Thread
+                          <Grid key={1} item xs={6} className={classes.tabpanel}>
+                            <Typography className={classes.text} id='pretto-slider' gutterBottom>
+                              Core Thread Size
                             </Typography>
-                            <PrettoSlider valueLabelDisplay="auto" aria-labelledby="range-slider" defaultValue={20} />
-                            <ApplyButton startIcon={<DoneOutlinedIcon />}>Apply</ApplyButton>
-                            <Grid key={2} item xs={12}>
-                            <Typography className={classes.text} id="pretto-slider" gutterBottom>
-                              Define Max Thread
-                            </Typography>                      
-                            <PrettoSlider valueLabelDisplay="auto" aria-labelledby="range-slider" defaultValue={20} />
-                            <ApplyButton startIcon={<DoneOutlinedIcon />}>Apply</ApplyButton>
-                          </Grid>
+                            <PrettoSlider valueLabelDisplay='auto' aria-labelledby='range-slider' value={this.state.corePoolSize} onChange={(event, v) => {
+                              this.handleCorePoolSize(v);
+                            }} />
+                            <Grid key={3} item xs={12}>
+                              <Typography className={classes.text} id='pretto-slider' gutterBottom>
+                                Max Thread Size
+                              </Typography>
+                              <PrettoSlider valueLabelDisplay='auto' aria-labelledby='range-slider' value={this.state.maximumPoolSize} onChange={(event, v) => {
+                                this.handleMaximumPoolSize(v);
+                              }} />
+                              <ApplyButton startIcon={<DoneOutlinedIcon />} onClick={(event, v) => {
+                                this.handleApply()
+                              }} >Apply</ApplyButton>
+                            </Grid>
                           </Grid>
                       </Grid>
-                      )]}
-                      spacing={5}
-                      direction='column'/>
+                    )]}
+                    spacing={5}
+                    direction='column'/>
       </Grid>
     </Grid>
     )

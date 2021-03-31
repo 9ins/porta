@@ -13,6 +13,7 @@ export const ApplyButton = withStyles({
       backgroundColor: '#bbbbbb',
       borderColor: '#cccccc',
       marginTop: 0,
+      marginLeft: 20,
       marginBottom: 10,
       fontFamily: [
         '-apple-system',
@@ -45,12 +46,13 @@ export const ApplyButton = withStyles({
   })(Button);
 
 export const PrettoSlider = withStyles({
-    root: {      
+    root: {
       color: 'white',
       height: 0,
-      width: 120,
+      width: 130,
       align: 'center',
-      marginRight:10,
+      marginRight: 0,
+      marginLeft: 5
     },
     thumb: {
       height: 16,
@@ -58,7 +60,7 @@ export const PrettoSlider = withStyles({
       backgroundColor: '#aaaaaa',
       border: '3px solid currentColor',
       marginTop: -4,
-      marginLeft: -12,
+      marginLeft: 0,
       '&:focus, &:hover, &$active': {
         boxShadow: 'inherit',
       },
@@ -69,11 +71,13 @@ export const PrettoSlider = withStyles({
       left: 'calc(-50% - 4px)',
     },
     track: {
+      width: 140,
       height: 10,
       borderRadius: 4,
       border: '3px solid green',
     },
     rail: {
+      width: 140,
       height: 10,
       borderRadius: 4,
       border: '3px solid green',

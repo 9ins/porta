@@ -17,8 +17,6 @@ import org.chaostocosmos.porta.UNIT;
 import org.chaostocosmos.porta.UtilBox;
 import org.chaostocosmos.porta.properties.Credentials;
 import org.chaostocosmos.porta.properties.Messages;
-import org.chaostocosmos.porta.properties.PropertiesHelper;
-import org.chaostocosmos.porta.properties.SessionMappingConfigs;
 import org.chaostocosmos.porta.web.HTTP.METHOD;
 import org.chaostocosmos.porta.web.HTTP.RESPONSE;
 import org.chaostocosmos.porta.web.HTTP.RESPONSE_TYPE;
@@ -78,21 +76,21 @@ public class SessionStatusServlet extends AbstractHttpServlet implements ISessio
         map.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
         map.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
         map.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(map));        
+        return map;
+    }
+
+    @Override
+    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, String body, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }
 
     @Override
-    public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }
 
     @Override
-    public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
-        return null;
-    }
-
-    @Override
-    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap,  File file, Credentials credentials, Messages messages) throws ServletException, IOException {
         return null;
     }    
 

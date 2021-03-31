@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.chaostocosmos.porta.Logger;
+import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.PortaMain;
 import org.chaostocosmos.porta.UtilBox;
 import org.chaostocosmos.porta.properties.Messages.MSG_TYPE;
@@ -153,12 +154,27 @@ public class PropertiesHelper {
 	}
 
 	/**
+	 * Dump config for specified name
+	 * @param name
+	 * @throws PortaException
+	 * @throws IOException
+	 */
+	public void dump(String name) throws PortaException, IOException {
+		File file = this.configsMap.keySet().stream().filter(f -> f.getName().substring(0, f.getName().lastIndexOf(".")).equals(name)).findAny().orElse(null);
+		if(file == null) {
+			throw new PortaException("ERRCODE009", new Object[]{"name"});
+		}
+		dump(file, this.configsMap.get(file));
+	}
+
+	/**
 	 * Dump to file
 	 * @param file
 	 * @param obj
 	 * @throws IOException
 	 */
 	public void dump(File file, Object obj) throws IOException {
+		System.out.println(file.getAbsolutePath()+"     "+obj.toString());
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(FlowStyle.BLOCK);
 		options.setPrettyFlow(true);

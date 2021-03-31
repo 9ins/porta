@@ -47,10 +47,9 @@ public abstract class AbstractHttpServlet extends HttpServlet {
 
     @Override
     public final void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {        
-        Map<Object, Object> paramMap = getParamValueMap(request);                
-        Map<Object, Object> map;
+        Map<Object, Object> map = getParamValueMap(request);                
         try {
-            map = toDoGet(request, response, paramMap, this.credentials, this.context.getMessages());
+            map = toDoGet(request, response, map, this.credentials, this.context.getMessages());
             doResponse(response, map);
         } catch(Exception e) {
             throw new ServletException(e.getMessage());
@@ -59,11 +58,11 @@ public abstract class AbstractHttpServlet extends HttpServlet {
     
     @Override
     public final void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {        
-        Map<Object, Object> map;
+        Map<Object, Object> map = getParamValueMap(request);
         try {
             switch(request.getContentType()) {
-                case "application/json" : 
-                    map = toDoPostJson(request, response, getJson(request), this.context.getCredentials(), this.context.getMessages());
+                case "application/json" :                 
+                    map = toDoPostJson(request, response, map, getJson(request), this.context.getCredentials(), this.context.getMessages());
                 break;
                 case "multipart/formed-data" :
                     String fileName = request.getParameter("filePath");
@@ -76,11 +75,11 @@ public abstract class AbstractHttpServlet extends HttpServlet {
                         os.write(bytes, 0, read);
                     }
                     os.close();
-                    map = toDoPostFile(request, response, file, this.credentials, this.context.getMessages());
+                    map = toDoPostFile(request, response, map, file, this.credentials, this.context.getMessages());
                 break;
                 default:
                     String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-                    map = toDoPost(request, response, body, this.credentials, this.context.getMessages());
+                    map = toDoPost(request, response, map, body, this.credentials, this.context.getMessages());
             }
             doResponse(response, map);
         } catch(Exception e) {
@@ -189,13 +188,14 @@ public abstract class AbstractHttpServlet extends HttpServlet {
      * @param request
      * @param response
      * @param body
+     * @param paramValueMap
      * @param credentials
      * @param messages
      * @return
      * @throws ServletException
      * @throws IOException
      */
-    public abstract Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, String body, Credentials credentials, Messages messages) throws Exception;
+    public abstract Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, String body, Credentials credentials, Messages messages) throws Exception;
 
     /**
      * Process get request. 
@@ -206,11 +206,12 @@ public abstract class AbstractHttpServlet extends HttpServlet {
      * @param json
      * @param credentials
      * @param messages
+     * @param paramValueMap
      * @return
      * @throws ServletException
      * @throws IOException
      */
-    public abstract Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, String json, Credentials credentials, Messages messages) throws Exception;
+    public abstract Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, String json, Credentials credentials, Messages messages) throws Exception;
 
     /**
      * Process get request. 
@@ -221,9 +222,10 @@ public abstract class AbstractHttpServlet extends HttpServlet {
      * @param file
      * @param credentials
      * @param messages
+     * @param paramValueMap
      * @return
      * @throws ServletException
      * @throws IOException
      */
-    public abstract Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, File file, Credentials credentials, Messages messages) throws Exception;
+    public abstract Map<Object, Object> toDoPostFile(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, File file, Credentials credentials, Messages messages) throws Exception;
 }
