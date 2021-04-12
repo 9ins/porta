@@ -9,8 +9,7 @@ public class AppConfigs {
     String version;
     long statisticsProbeMillis;
     
-    public AppConfigs() {
-    }
+    public AppConfigs() {}
 
     public String getName() {
         return this.name;

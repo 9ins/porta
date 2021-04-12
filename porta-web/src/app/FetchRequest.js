@@ -21,53 +21,54 @@ const requestPostOptions = (body) => {
 
 class FetchRequest extends Component {
 
-    fetchGet = async (path, type, unit) => {
-        const response = await fetch(path + "?type=" + type + "&unit=" + unit, requestGetOptions);
+    fetchGetAsync = async (path) => {
+        const response = await fetch(path, requestGetOptions);
         const json =  await response.json();
         return json;
     }
 
-    fetchGetResource = async (path, type, unit, k) => {        
-        const res = await fetch(path + "?type=" + type + "&unit=" + unit, requestGetOptions);
-        const json = await res.json();
-        return json[k];
+    fetchGetResource = (path) => {        
+        return fetch(path, requestGetOptions)
+        .then(response => response.json())
+        .catch(error => console.log(error));
     }
 
-    fetchGetBarchart = (callback) => {
-        fetch(callback.state.path+"?type=" + callback.state.type + "&unit=" + callback.state.unit, requestGetOptions)
+    fetchGetBarchart = (path, callback) => {
+        fetch(path, requestGetOptions)
         .then(response => response.json())
         .then(json => {            
             callback.setState ({
-                data : callback.state.label.map( (e, index) => [{ x: e, y: Object.keys(json).filter(v => v.startsWith(e)).map(e => json[e])}] ) 
+                data : callback.props.labels.map( (e, index) => [{ x: e, y: json[Object.keys(json).filter(v => v.startsWith(e))[0]]}] ) 
             });
         })
         .catch(err => console.log(err));    
     }
 
-    fetchGetLinechart = (callback) => {
-        fetch(callback.state.path+"?type=" + callback.state.type + "&unit=" + callback.state.unit, requestGetOptions)
+    fetchGetLinechart = (path, callback) => {
+        fetch(path, requestGetOptions)
         .then(response => response.json()) 
         .then(json => {
-            if (callback.state.data[0].length > (callback.state.xdomain[1] - callback.state.xdomain[0])) {
+            if (callback.state.data[0].length > (callback.state.xDomain[1] - callback.state.xDomain[0])) {
                 callback.setState({
-                    data: callback.state.element.map((e, index) => callback.state.data[index].slice(1, callback.state.data[index].length).map((e, index) => ({ x: index, y: e.y })))
+                    data: callback.props.elements.map((e, index) => callback.state.data[index].slice(1, callback.state.data[index].length).map((e, index) => ({ x: index, y: e.y })))
                 })
             }
             callback.setState({
-                data: callback.state.element.map((e, index) => [...callback.state.data[index], { x: callback.state.data[index][callback.state.data[index].length - 1].x + 1, y: json[e] }]
+                    data: callback.props.elements.map((e, index) => [...callback.state.data[index], { x: callback.state.data[index][callback.state.data[index].length - 1].x + 1, y: json[e] }]
                 )}
             )
-            if (callback.state.type == "MEMORY") {
+            console.log(callback.props);
+            if (callback.props.name == "memory") {
                 callback.setState({
-                    ydomain: [0, parseInt(json.systemTotal)]
+                    yDomain: [0, parseInt(json.systemTotal)]
                 })
             }
         })
     }
 
-    fetchPostRequest = (path, type, body) => {
-        fetch(path + "?type=" + type, requestPostOptions(body))
-        .then(response => console.log(response))
+    fetchPostRequest = (path, body) => {
+        return fetch(path, requestPostOptions(body))
+        .then(response => response.json())
         .catch(err => console.log(err))
     }
 }

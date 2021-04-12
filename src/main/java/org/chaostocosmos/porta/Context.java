@@ -38,7 +38,8 @@ public class Context {
         credentials = propertiesHelper.getCredentials();
         version = configs.getAppConfigs().getVersion();
         credentialsPath = propertiesHelper.getYamlPath("credentials.yml");
-        messagesPath = propertiesHelper.getYamlPath("messages.yml");        
+        messagesPath = propertiesHelper.getYamlPath("messages.yml"); 
+        messages = propertiesHelper.getMessages();       
         trademarkPath = portaHomePath.resolve("config").resolve("trademark");
         TRADE_MARK =new FileSource().readTradeMark(trademarkPath); 
     }

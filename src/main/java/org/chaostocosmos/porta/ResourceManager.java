@@ -12,7 +12,7 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
 
     private class ProbeTask extends TimerTask {
         @Override
-        public void run() {            
+        public void run() {
             try {
             } catch (Exception e) {
                 Logger.getInstance().throwable(e);
@@ -26,6 +26,10 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
     
     Map<String, Object> resourceMap;
 
+    /**
+     * ResourceManager 
+     * @param portaMain
+     */
     public ResourceManager(PortaMain portaMain) {
         this.portaMain = portaMain;
         this.resourceMap = new LinkedHashMap<>();        
@@ -49,7 +53,7 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
             return getMemoryUsage(unit);
             case THREAD:
             return getThreadPoolUsage(unit);
-            case SESSION_INFO:            
+            case SESSION_INFO:
             return getSessionInfo(params[0]+"");
             case SESSIONS_INFO:
             return getSessionsInfo();
@@ -136,6 +140,7 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         int corePoolSize = this.portaMain.getPortaThreadPool().getCorePoolSize();
         int largestPoolSize = this.portaMain.getPortaThreadPool().getLargestPoolSize();
         int maxinumPoolSize = this.portaMain.getPortaThreadPool().getMaximumPoolSize();
+        int threadPoolLimitSize = PropertiesHelper.getInstance().getConfigs().getThreadPoolConfigs().getThreadPoolLimitSize();
         long completedTaskCount = this.portaMain.getPortaThreadPool().getCompletedTaskCount();
         long taskCount = this.portaMain.getPortaThreadPool().getTaskCount();
         int queueSize = this.portaMain.getPortaThreadPool().getQueue().size();
@@ -143,6 +148,7 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         map.put("corePoolSize", corePoolSize);
         map.put("largestPoolSize", largestPoolSize);
         map.put("maxinumPoolSize", maxinumPoolSize);
+        map.put("limitPoolSize", threadPoolLimitSize);
         map.put("completedTaskCount", completedTaskCount);
         map.put("taskCount", taskCount);
         map.put("queueSize", queueSize);
@@ -151,8 +157,8 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
 
     @Override
     public void setCorePoolSize(int size) throws Exception {
+        System.out.println("setting core pool size: "+size);
         this.portaMain.getPortaThreadPool().setCorePoolSize(size);
-
     }
 
     @Override

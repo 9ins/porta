@@ -35,9 +35,6 @@ public class SessionMappingConfigs implements Serializable {
 	private int connectionTimeout;
 	private int soTimeout;
 
-	private SESSION_MODE sessionModeEnum;
-	private Map<String, Float> loadBalanceRatioMap;
-
 	SessionMappingConfigs() {}
 
 	public Map<String, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
@@ -147,14 +144,6 @@ public class SessionMappingConfigs implements Serializable {
 
 	public void setFailedCircularRetry(int failedCircularRetry) {
 		this.failedCircularRetry = failedCircularRetry;
-	}
-
-	public void setSessionModeEnum(SESSION_MODE sessionModeEnum) {
-		this.sessionModeEnum = sessionModeEnum;
-	}
-
-	public void setLoadBalanceRatioMap(Map<String, Float> loadBalanceRatioMap) {
-		this.loadBalanceRatioMap = loadBalanceRatioMap;
 	}
 
 	public void setRemoteHosts(List<String> remoteHosts) {
@@ -268,8 +257,6 @@ public class SessionMappingConfigs implements Serializable {
 			", bufferSize='" + bufferSize + "'" +
 			", connectionTimeout='" + connectionTimeout + "'" +
 			", soTimeout='" + soTimeout + "'" +
-			", sessionModeEnum='" + sessionModeEnum + "'" +
-			", loadBalanceRatioMap='" + loadBalanceRatioMap + "'" +
 			"}";
 	}
 }

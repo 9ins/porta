@@ -9,19 +9,17 @@ import com.google.gson.Gson;
  */
 public class Messages {
 
-    public static enum MSG_TYPE {system, information, debug, error};
-
     Gson gson = new Gson();
     Map<String, String> system;
-    Map<String, String> information;
+    Map<String, String> message;
     Map<String, String> debug;
     Map<String, String> error;
 
     public Messages() {}
 
-    public Messages(Map<String, String> system, Map<String, String> information, Map<String, String> debug, Map<String, String> error) {
+    public Messages(Map<String, String> system, Map<String, String> message, Map<String, String> debug, Map<String, String> error) {
         this.system = system;
-        this.information = information;
+        this.message = message;
         this.debug = debug;
         this.error = error;
     }
@@ -34,12 +32,12 @@ public class Messages {
         this.system = system;
     }
 
-    public Map<String, String> getInformation() {
-        return this.information;
+    public Map<String, String> getMessage() {
+        return this.message;
     }
 
-    public void setInformation(Map<String, String> information) {
-        this.information = information;
+    public void setMessage(Map<String, String> message) {
+        this.message = message;
     }
 
     public Map<String,String> getDebug() {
@@ -61,8 +59,8 @@ public class Messages {
     public String getMessage(MSG_TYPE type, String msgKey) {
         if(type == MSG_TYPE.system) {
             return this.system.get(msgKey);
-        } else if(type == MSG_TYPE.information) {
-            return this.information.get(msgKey);
+        } else if(type == MSG_TYPE.message) {
+            return this.message.get(msgKey);
         } else if(type == MSG_TYPE.error) {
             return this.error.get(msgKey);
         } else if(type == MSG_TYPE.debug) {
@@ -83,11 +81,11 @@ public class Messages {
         if(msgKey.startsWith("SYS")) {
             return getJson(MSG_TYPE.system, msgKey);
         } else if(msgKey.startsWith("INFO")) {
-            return getJson(MSG_TYPE.information, msgKey);
+            return getJson(MSG_TYPE.message, msgKey);
         } else if(msgKey.startsWith("DEBUG")) {
             return getJson(MSG_TYPE.debug, msgKey);
         } else if(msgKey.startsWith("ERR")) {
-            return getJson(MSG_TYPE.information, msgKey);
+            return getJson(MSG_TYPE.message, msgKey);
         } else {
             throw new IllegalArgumentException("Message key must start with SYS/INFO/DEBUG/ERR.");
         }
@@ -98,7 +96,7 @@ public class Messages {
         return "{" +
             " gson='" + gson + "'" +
             ", system='" + system + "'" +
-            ", information='" + information + "'" +
+            ", message='" + message + "'" +
             ", debug='" + debug + "'" +
             ", error='" + error + "'" +
             "}";

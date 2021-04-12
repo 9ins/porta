@@ -29,7 +29,11 @@ public class LoginServlet extends AbstractHttpServlet {
         if(configHelper.isSuperUser(user, password)) {
             List<String> grants = new ArrayList<String>();
             grants.add(Grant.SUPER.name());
-            return new Credential(user, password, grants); 
+            Credential credential = new Credential(); 
+            credential.setUsername(user);
+            credential.setPassword(password);
+            credential.setGrant(grants);
+            return credential;
         } else {
             Credential credential = configHelper.isValidUser(user, password);
             if(credential != null) {

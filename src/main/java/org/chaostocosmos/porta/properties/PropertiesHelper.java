@@ -25,7 +25,6 @@ import org.chaostocosmos.porta.Logger;
 import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.PortaMain;
 import org.chaostocosmos.porta.UtilBox;
-import org.chaostocosmos.porta.properties.Messages.MSG_TYPE;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -158,8 +157,10 @@ public class PropertiesHelper {
 	 * @param name
 	 * @throws PortaException
 	 * @throws IOException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	public void dump(String name) throws PortaException, IOException {
+	public void dump(String name) throws PortaException, IOException, IllegalArgumentException, IllegalAccessException {
 		File file = this.configsMap.keySet().stream().filter(f -> f.getName().substring(0, f.getName().lastIndexOf(".")).equals(name)).findAny().orElse(null);
 		if(file == null) {
 			throw new PortaException("ERRCODE009", new Object[]{"name"});
@@ -172,14 +173,33 @@ public class PropertiesHelper {
 	 * @param file
 	 * @param obj
 	 * @throws IOException
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
 	 */
-	public void dump(File file, Object obj) throws IOException {
-		System.out.println(file.getAbsolutePath()+"     "+obj.toString());
+	public void dump(File file, Object obj) throws IOException, IllegalArgumentException, IllegalAccessException {
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(FlowStyle.BLOCK);
 		options.setPrettyFlow(true);
 		Yaml yml = new Yaml(options);
-		yml.dump(obj, new FileWriter(file));
+		Map<String, Object> map = getMap(obj);
+		yml.dump(map, new FileWriter(file));
+	}
+
+	/**
+	 * Get field map from object
+	 * @param obj
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 */
+	public Map<String, Object> getMap(Object obj) throws IllegalArgumentException, IllegalAccessException {
+		Map<String, Object> map = new LinkedHashMap<>();
+		Field[] fields = obj.getClass().getDeclaredFields();
+		for(Field field : fields) {
+			Object o = field.get(obj);
+			map.put(field.getName(), o);
+		}
+		return map;
 	}
 
 	/**
@@ -334,7 +354,7 @@ public class PropertiesHelper {
      * @throws IllegalArgumentException
      */
     public String getSystemMessage(String msgKey, String... params) {
-        return getMessage(Messages.MSG_TYPE.system, msgKey, params);
+        return getMessage(MSG_TYPE.system, msgKey, params);
     }
 
     /**
@@ -348,7 +368,7 @@ public class PropertiesHelper {
      * @throws NoSuchMethodException
      */
     public String getInformationMessage(String msgKey, String... params) {
-        return getMessage(Messages.MSG_TYPE.information, msgKey, params);
+        return getMessage(MSG_TYPE.message, msgKey, params);
     }
 
     /**
@@ -362,7 +382,7 @@ public class PropertiesHelper {
      * @throws NoSuchMethodException
      */
     public String getErrorMessage(String msgKey, Object... params) {
-        return getMessage(Messages.MSG_TYPE.error, msgKey, params);
+        return getMessage(MSG_TYPE.error, msgKey, params);
     }
 
     /**
@@ -376,7 +396,7 @@ public class PropertiesHelper {
      * @throws IllegalArgumentException
      * @throws IllegalAccessException
      */
-    public String getMessage(Messages.MSG_TYPE msgType, String msgKey, Object... params) {     
+    public String getMessage(MSG_TYPE msgType, String msgKey, Object... params) {     
 		Messages messages = getMessages();
 		String methodName = "get"+msgType.name().substring(0, 1).toUpperCase()+msgType.name().substring(1);
 		System.out.println(methodName);

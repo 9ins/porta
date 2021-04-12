@@ -16,6 +16,7 @@ import org.chaostocosmos.porta.UNIT;
 import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.RESOURCE;
 import org.chaostocosmos.porta.properties.Credentials;
+import org.chaostocosmos.porta.properties.MSG_TYPE;
 import org.chaostocosmos.porta.properties.Messages;
 import org.chaostocosmos.porta.properties.PropertiesHelper;
 import org.chaostocosmos.porta.web.HTTP.METHOD;
@@ -93,9 +94,10 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
                     this.setCorePoolSize((int)coreSize);
                     this.setMaximumPoolSize((int)maxSize);
                     PropertiesHelper.getInstance().dump("configs");
+                    reqMap.put("message", messages.getMessage(MSG_TYPE.message, "MSGCODE001"));
                 break;
                 default:
-                throw new PortaException("ERRCODE001", new Object[]{type});
+                    throw new PortaException("ERRCODE001", new Object[]{type});
             }
         } catch (Exception e) {
             Logger.getInstance().throwable(e);
@@ -104,11 +106,12 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
             paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
             paramMap.put(RESPONSE.RESPONSE_CONTENT, e.getMessage());
             return paramMap;
-        }                        
+        }
+        reqMap.put("status", "success");
         paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
         paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
         paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
-        paramMap.put(RESPONSE.RESPONSE_CONTENT, "{status: ok}");
+        paramMap.put(RESPONSE.RESPONSE_CONTENT, gson.toJson(reqMap));
         return paramMap;
     }
 

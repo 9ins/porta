@@ -9,8 +9,6 @@ public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecu
 
     Logger logger = Logger.getInstance();
 
-    private static PortaThreadPool proxyThreadPool = null;
-
     public PortaThreadPool(int coreSize, int maxSize, int idleSecond, int queueSize) {
         super(coreSize, maxSize, idleSecond, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(queueSize));
         setRejectedExecutionHandler(this);

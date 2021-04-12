@@ -1,36 +1,29 @@
 import React, { Component } from 'react';
-import '../../node_modules/react-vis/dist/style.css';
 import { VerticalGridLines, HorizontalGridLines, XAxis, YAxis, XYPlot, LineSeries, DiscreteColorLegend } from 'react-vis';
-import randomColor from 'randomcolor'
-import Grid from '@material-ui/core/Grid'
 import FetchRequest from '../app/FetchRequest';
+import Typography from '@material-ui/core/Typography';
+import {chartThemes} from '../app/PortaThemes';
+import { withStyles } from '@material-ui/core/styles';
+import { CardContent, isWidthDown } from '@material-ui/core';
+import '../../node_modules/react-vis/dist/style.css';
 
 class LineChart extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            method: props.method,
-            path: props.path,
-            type: props.type, 
-            unit: props.unit, 
-            dim: props.dim, 
-            stroke: props.stroke, 
-            xdomain: props.xdomain, 
-            ydomain: props.ydomain, 
-            element: props.element, 
-            label: props.label, 
-            refreshSec: props.refreshSec, 
-            data: props.element.map((e, index) => [{ x: 0, y: 0 }])
-        }
-        this.fetchRequest  = new FetchRequest().fetchGetLinechart;
+            xDomain: [0, 100],
+            yDomain: [0, 100],
+            data: props.elements.map((e, index) => [{ x: 0, y: 0 }])
+        }        
+        this.fetchRequest = new FetchRequest().fetchGetLinechart;
     }
 
     componentDidMount() {
-        this.fetchRequest(this);
+        this.fetchRequest(this.props.path, this);
         this.setIntervalId = setInterval(() => {
-            this.fetchRequest(this);
-        }, this.state.refreshSec*2000);
+            this.fetchRequest(this.props.path, this);
+        }, this.props.refreshSec * 1000);
     }
 
     componentWillUnmount() {
@@ -38,36 +31,32 @@ class LineChart extends Component {
     }
 
     render() {
+        const { classes } = this.props;
+        const bullet = <span className={classes.bullet}>•</span>;
         return (
-            <div className="LineChart" style={
-                {
-                    backgroundColor: "#fefefe",
-                    border: '2px solid darkgreen',
-                    width: this.state.dim[0],
-                    height: (this.props.dim[1] + 50),
-                }
-            }>
-                <DiscreteColorLegend orientation='horizontal' items={this.state.label.map((e, index) => (
-                    {
+            <CardContent className={classes.root}>
+                <Typography className={classes.title}>
+                    {bullet} {this.props.title}
+                </Typography>
+                <DiscreteColorLegend className={classes.legend} orientation='horizontal' items={this.props.labels.map((e, index) => ({
                         title: e,
-                        color: this.state.stroke[index]
-                    }
-                ))
+                        color: this.props.color[index]
+                    }))
                 } />
-                <XYPlot width={this.state.dim[0]} height={this.state.dim[1]} stroke="#5ecca8" xDomain={this.state.xdomain} yDomain={this.state.ydomain} >
+                <XYPlot className={classes.xy} width={this.props.dimension[0]} height={this.props.dimension[1]} xDomain={this.state.xDomain} yDomain={this.state.yDomain} >
                     <VerticalGridLines />
                     <HorizontalGridLines />
-                    <XAxis tickFormat={(d) => ''}/>
-                    <YAxis tickFormat={(d) => d + '' + ((this.state.unit === 'PCT') ? '%' : this.state.unit)} />                    
+                    {/* <XAxis tickFormat={(d) => ''} */}
+                    <YAxis tickFormat={(d) => d + '' + ((this.props.name === 'cpu') ? '%' : this.props.unit)} />
                     {
-                        this.state.element.map((e, index) => (
-                            <LineSeries key={index} data={this.state.data[index]} style={{stroke: this.state.stroke[index], strokeWidth: 1.4}}/>
+                        this.props.elements.map((e, index) => (
+                            <LineSeries key={index} data={this.state.data[index]} style={{ stroke: this.props.color[index], strokeWidth: 1.5 }} />
                         ))
                     }
                 </XYPlot>
-            </div>
+            </CardContent>
         );
     }
 }
 
-export default LineChart;
+export default withStyles(chartThemes)(LineChart);

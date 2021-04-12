@@ -7,6 +7,7 @@ package org.chaostocosmos.porta.properties;
 public class ThreadPoolConfigs {
     int threadPoolCoreSize;
     int threadPoolMaxSize;
+    int threadPoolLimitSize;
     int threadPoolIdleSecond;
     int threadPoolQueueSize;    
     
@@ -22,6 +23,14 @@ public class ThreadPoolConfigs {
 
     public int getThreadPoolMaxSize() {
         return this.threadPoolMaxSize;
+    }
+
+    public int getThreadPoolLimitSize() {
+        return this.threadPoolLimitSize;
+    }
+
+    public void setThreadPoolLimitSize(int threadPoolLimitSize) {
+        this.threadPoolLimitSize = threadPoolLimitSize;
     }
 
     public void setThreadPoolMaxSize(int threadPoolMaxSize) {
@@ -49,6 +58,7 @@ public class ThreadPoolConfigs {
         return "{" +
             " threadPoolCoreSize='" + threadPoolCoreSize + "'" +
             ", threadPoolMaxSize='" + threadPoolMaxSize + "'" +
+            ", threadPoolLimitSize='" + threadPoolLimitSize + "'" +
             ", threadPoolIdleSecond='" + threadPoolIdleSecond + "'" +
             ", threadPoolQueueSize='" + threadPoolQueueSize + "'" +
             "}";

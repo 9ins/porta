@@ -4,9 +4,9 @@ system:
   SYSCODE001: 
   SYSCODE002: 
 
-information:
-  INFOCODE001: 
-  INFOCODE002: 
+message:
+  MSGCODE001: 'Thread pool configuration is successful applied...'
+  MSGCODE002:
 
 debug: 
   DEBUG001: 

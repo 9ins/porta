@@ -1,39 +1,28 @@
 import React, { Component } from 'react';
-import { VerticalGridLines, HorizontalGridLines, VerticalBarSeries, VerticalBarSeriesCanvas, XAxis, YAxis, XYPlot, LabelSeries, DiscreteColorLegend } from 'react-vis';
-import randomColor from 'randomcolor'
-import { BottomNavigation } from '@material-ui/core';
+import { VerticalBarSeries, XAxis, XYPlot, DiscreteColorLegend } from 'react-vis';
 import FetchRequest from '../app/FetchRequest';
-
+import { withStyles } from '@material-ui/core/styles';
+import {chartThemes} from '../app/PortaThemes';
+import { CardContent, isWidthDown } from '@material-ui/core';
 
 class BarChart extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            method: props.method,
-            path: props.path,
-            type: props.type,
-            unit: props.unit,
-            dist: props.dist,
-            dim: props.dim,
-            color: props.color,
-            element: props.element,
-            label: props.label,
-            refreshSec: props.refreshSec,
-            data: props.element.map((e, index) => [{ 
-                x: props.label[index], 
-                y: 0 
-            }])
+            data: props.elements.map((e, index) => [{
+                x: props.labels[index],
+                y: 0
+            }]),
         }
-        this.fetchRequest  = new FetchRequest().fetchGetBarchart;
+        this.fetchRequest = new FetchRequest().fetchGetBarchart;
     }
 
     componentDidMount() {
-        this.fetchRequest(this);
+        this.fetchRequest(this.props.path, this);
         this.setIntervalId = setInterval(() => {
-            this.fetchRequest(this);
-        },  this.state.refreshSec * 2000);        
-        console.log(this.state.data);
+            this.fetchRequest(this.props.path, this);
+        },  this.props.refreshSec * 1000);
     }
 
     componentWillUnmount() {
@@ -41,33 +30,29 @@ class BarChart extends Component {
     }
 
     render() {
+        console.log("////////// "+this.state.width);
         const BarSeries = VerticalBarSeries;
+        const { classes } = this.props;
+        const bullet = <span className={classes.bullet}>•</span>;
         return (
-                <div style={
+            <CardContent className={classes.root}>
+                <DiscreteColorLegend orientation='horizontal' items={this.props.elements.map((e, index) => (
                     {
-                        border: '1px solid darkblue',
-                        backgroundColor: "#fefefe",
-                        width: this.state.dim[0] + 30,
-                        height: (this.props.dim[1] + 50),
-                    }
-                }>
-                <DiscreteColorLegend orientation='horizontal' items={this.state.element.map((e, index) => (
-                    {
-                        title: this.state.label[index],
-                        color: this.state.color[index],
+                        title: this.props.labels[index],
+                        color: this.props.color[index],
                     }
                 ))} />
-                <XYPlot xType="ordinal" width={this.state.dim[0]} height={this.state.dim[1]} xDistance={this.state.dist}>
-                <XAxis />
-                {
-                    this.state.element.map((e, index) => (
-                        <BarSeries animation key={index} data={this.state.data[index]} color={this.state.color[index]} />
-                    ))
-                }                
+                <XYPlot xType="ordinal" width={this.props.dimension[0]} height={this.props.dimension[1]} xDistance={5}>
+                    <XAxis />
+                    {
+                        this.props.elements.map((e, index) => (
+                            <BarSeries animation key={index} data={this.state.data[index]} color={this.props.color[index]} />
+                        ))
+                    }
                 </XYPlot>
-                </div>
+            </CardContent>
         );
     }
 }
-  
-export default BarChart;
+
+export default withStyles(chartThemes)(BarChart);

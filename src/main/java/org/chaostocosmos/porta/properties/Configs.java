@@ -10,6 +10,8 @@ public class Configs implements Serializable {
 	ThreadPoolConfigs threadPoolConfigs;
 	Map<String, SessionMappingConfigs> sessionMappingConfigs;
 
+	public Configs() {}
+
 	public AppConfigs getAppConfigs() {
 		return this.appConfigs;
 	}
@@ -40,6 +42,10 @@ public class Configs implements Serializable {
 
 	public void setSessionMappingConfigs(Map<String,SessionMappingConfigs> sessionMappingConfigs) {
 		this.sessionMappingConfigs = sessionMappingConfigs;
+	}
+
+	public Map<String,SessionMappingConfigs> getSessionMappingConfigs() {
+		return this.sessionMappingConfigs;
 	}
 
 	public SessionMappingConfigs getSessionMappingConfigs(String name) {
