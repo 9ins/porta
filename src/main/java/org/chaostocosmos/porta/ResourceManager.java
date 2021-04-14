@@ -1,10 +1,13 @@
 package org.chaostocosmos.porta;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
+import org.chaostocosmos.porta.properties.Configs;
 import org.chaostocosmos.porta.properties.PropertiesHelper;
 import org.chaostocosmos.porta.properties.SessionMappingConfigs;
 
@@ -57,6 +60,8 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
             return getSessionInfo(params[0]+"");
             case SESSIONS_INFO:
             return getSessionsInfo();
+            case SESSION_SIMPLE:
+            return getSessionSimple();
             case SESSION_USAGE:
             return getSessionUsage(params[0]+"");
             case SESSIONS_USAGE:
@@ -73,13 +78,12 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
     @Override
     public Map<Object, Object> getSessionInfo(String sessionName) throws Exception {
         SessionMappingConfigs sessionMapping = this.portaMain.getContext().getConfigs().getSessionMappingConfigs(sessionName);        
-        return null;
+        return sessionMapping.getSessionMappingMap();
     }
 
     @Override
-    public Map<Object, Object> getSessionsInfo() throws Exception {
-        this.portaMain.getContext().getConfigs().getSessionMapping();
-        return null;
+    public Map<Object, Object> getSessionsInfo() throws Exception {        
+        return this.portaMain.getContext().getConfigs().getSessionMapping().entrySet().stream().collect(Collectors.toMap(k -> k, v -> v.getValue()));
     }
 
     @Override
@@ -164,5 +168,13 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
     @Override
     public void setMaximumPoolSize(int size) throws Exception {
         this.portaMain.getPortaThreadPool().setMaximumPoolSize(size);
+    }
+
+    @Override
+    public Map<Object, Object> getSessionSimple() throws Exception {
+        Configs config = PropertiesHelper.getInstance().getConfigs();
+        Map<String, SessionMappingConfigs> sessionMap = config.getSessionMapping();
+        Map<Object, Object> map = new HashMap<>();        
+        return sessionMap.entrySet().stream().collect(Collectors.toMap(k -> k, v -> v.getValue()));
     }
 }
