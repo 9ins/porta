@@ -67,6 +67,6 @@ sessionMappingConfigs:
     remoteHosts:
     - 192.168.1.157:1521
     sessionMode: STAND_ALONE
-    soTimeout: 60000
+    soTimeout: 6000
     standAloneRetry: 3
     tcpNoDelay: true

@@ -42,22 +42,22 @@ public class DBSessionTest {
         public SelectQueryTask(String query) throws SQLException {
             //this.startMills = System.currentTimeMillis();
             this.query = query;
-            this.dbConnection = DriverManager.getConnection(url, dbUser, dbPasswd);
         }
 
         public void run() {
             try {
+                this.dbConnection = DriverManager.getConnection(url, dbUser, dbPasswd);
                 this.stmt = this.dbConnection.createStatement();
                 ResultSet rs = this.stmt.executeQuery(this.query);
                 while(rs.next()) {
                     totalRow++;
                     String result = rs.getString(1)+"  "+rs.getString(2)+"  "+rs.getString(3);
-                    System.out.println("[RESULT] "+result+"  ROW: "+totalRow);
+                    System.out.println(result+"   "+totalRow);
                 }
                 rs.close();
                 this.stmt.close();
                 this.dbConnection.close();
-                //System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
+                System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
             } catch(SQLException e) {
                 e.printStackTrace();
             }
@@ -73,6 +73,6 @@ public class DBSessionTest {
         String passwd = "znjcmdlsh12";
         String query = "select * from innoquartz.job_drill_simple";
         DBSessionTest dbTest = new DBSessionTest(1, url, user, passwd);
-        dbTest.generate(100, 0, query);
+        dbTest.generate(1, 0, query);
     }
 }
