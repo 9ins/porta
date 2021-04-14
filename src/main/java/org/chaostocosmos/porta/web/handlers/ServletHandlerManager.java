@@ -1,7 +1,6 @@
 package org.chaostocosmos.porta.web.handlers;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -10,12 +9,8 @@ import org.chaostocosmos.porta.Logger;
 import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.properties.Handlers;
 import org.chaostocosmos.porta.web.HTTP.METHOD;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.servlet.FilterHolder;
-import org.eclipse.jetty.servlet.ServletHolder;
 
-import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServlet;
 

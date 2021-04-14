@@ -21,3 +21,4 @@ error:
   ERRCODE007: 'Not supported HTTP response data type: $'
   ERRCODE008: 'Not exist resource type: $'
   ERRCODE009: 'There is not exist configuration YAML file. name: $'
+  ERRCODE010: 'There is no "type" parameter in request'

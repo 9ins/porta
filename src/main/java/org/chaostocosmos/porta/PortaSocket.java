@@ -17,6 +17,7 @@ public class PortaSocket extends Socket {
 	int sessionIndex;
 	InetSocketAddress remoteAddress;
 	SessionMappingConfigs sm;
+	Socket client;
 
 	/**
 	 * Constructor
@@ -28,11 +29,12 @@ public class PortaSocket extends Socket {
 	 * @param channelRatio
 	 * @throws PortaException
 	 */
-	public PortaSocket(SessionMappingConfigs sm, int sessionIndex) throws PortaException {
+	public PortaSocket(Socket client, SessionMappingConfigs sm, int sessionIndex) throws PortaException {
 		String remote = sm.getRemoteHosts().get(sessionIndex);
 		if (remote.indexOf(":") == -1) {
 			throw new PortaException("remoteHosts",	new Object[]{"Remote host must be defined like HOST:PORT format!!! Defined format is: " + remote});
 		}
+		this.client = client;
 		String host = remote.substring(0, remote.lastIndexOf(":"));
 		int port = Integer.parseInt(remote.substring(remote.lastIndexOf(":") + 1));
 		this.sm = sm;
@@ -51,6 +53,21 @@ public class PortaSocket extends Socket {
 		this.setTcpNoDelay(sm.isTcpNoDelay());
 		this.connect(this.remoteAddress, this.connectionTimeout);
 		return this;
+	}
+
+	public void close() throws IOException {
+		if(this.client != null) {
+			this.client.close();
+		}
+		super.close();
+	}
+
+	public Socket getClientSocket() {
+		return this.client;
+	}
+
+	public boolean isClientConnected() {
+		return this.client.isConnected();
 	}
 
 	public InetSocketAddress getRemoteAddress() {

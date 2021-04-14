@@ -8,6 +8,13 @@ import java.util.Map;
 public interface ISessionStatus {
 
     /**
+     * Get session simple information
+     * @return
+     * @throws Exception
+     */
+    public Map<Object, Object> getSessionSimple() throws Exception;
+
+    /**
      * Get session information
      * @param sessionName
      * @return

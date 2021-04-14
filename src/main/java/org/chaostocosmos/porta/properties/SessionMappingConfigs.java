@@ -37,8 +37,8 @@ public class SessionMappingConfigs implements Serializable {
 
 	SessionMappingConfigs() {}
 
-	public Map<String, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
-		Map<String, Object> map = new HashMap<String, Object>();
+	public Map<Object, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
+		Map<Object, Object> map = new HashMap<>();
 		Field[] fields = this.getClass().getDeclaredFields();
 		for (Field f : fields) {
 			map.put(f.getName(), f.get(this));

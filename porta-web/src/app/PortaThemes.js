@@ -54,7 +54,10 @@ export const dashboardThemes = theme => ({
   alert: {
     color: 'white',
     backgroundColor: themeColor,
-  }
+  },
+  content: {
+    fontSize: 10,
+  },
 });
 
 export const chartCardThemes = theme => ({
@@ -74,19 +77,25 @@ export const chartCardThemes = theme => ({
   },
   paper: {
     height: '100%',
-    display: "flex",
+    backgroundColor: themeColor,
     flexDirection: "column",
-    justifyContent: "center",
-    //backgroundColor: themeColor,
+    justifyContent: "top",
+  },
+  cardMedia: {
+    align: 'center',
+    backgroundColor: themeColor,
   },
   cardcontent: {
-    width: '100%',
-    height: '100%',
-    align: 'center',
-    fontSize: 18,
-    color: 'white',
+    marginRight: '1%',
+    marginLeft: '1%',
+    paddingTop: '1%',
+    paddingLeft: '1%',
+    fontSize: 13,
     backgroundColor: themeColor,
-  }
+  },
+  title: {
+    fontSize: 16
+  },
 });
 
 export const chartThemes = theme => ({
