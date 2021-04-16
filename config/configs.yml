@@ -8,10 +8,17 @@ managementConfigs: !!org.chaostocosmos.porta.properties.ManagementConfigs
   managementPort: 3232
   managementResourceBase: ./porta-web
 threadPoolConfigs: !!org.chaostocosmos.porta.properties.ThreadPoolConfigs
+<<<<<<< HEAD
   threadPoolCoreSize: 30
   threadPoolMaxSize: 50
   threadPoolIdleSecond: 10
   threadPoolLimitSize: 1000
+=======
+  threadPoolCoreSize: 167
+  threadPoolIdleSecond: 10
+  threadPoolLimitSize: 1000
+  threadPoolMaxSize: 804
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
   threadPoolQueueSize: 30
 sessionMappingConfigs:
   mysql: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
@@ -70,6 +77,10 @@ sessionMappingConfigs:
     - 192.168.1.157:1521
     sessionMode: STAND_ALONE
     soTimeout: 6000
+<<<<<<< HEAD
     retry: 3
     retryInterval: 500
+=======
+    standAloneRetry: 3
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
     tcpNoDelay: true

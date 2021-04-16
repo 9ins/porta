@@ -57,7 +57,11 @@ public class DBSessionTest {
                 rs.close();
                 this.stmt.close();
                 this.dbConnection.close();
+<<<<<<< HEAD
                 System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills)+"   Toal row: "+totalRow);
+=======
+                System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
             } catch(SQLException e) {
                 e.printStackTrace();
             }
@@ -73,6 +77,10 @@ public class DBSessionTest {
         String passwd = "znjcmdlsh12";
         String query = "select * from innoquartz.job_drill_simple";
         DBSessionTest dbTest = new DBSessionTest(1, url, user, passwd);
+<<<<<<< HEAD
         dbTest.generate(1000, 0, query);
+=======
+        dbTest.generate(1, 0, query);
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
     }
 }

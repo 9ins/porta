@@ -7,17 +7,21 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+<<<<<<< HEAD
 import org.chaostocosmos.porta.PortaSession.ChannelWorker;
 
 /**
  * PortaThreadPool class
  */
+=======
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
 public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecutionHandler {	
 
     Logger logger = Logger.getInstance();
 	List<PortaThreadPoolExceptionHandler> exceptionHandlers = new ArrayList<>();
 	List<PortaThreadPoolResultHandler> resultHandlers = new ArrayList<>();
 
+<<<<<<< HEAD
 	/**
 	 * Constructor
 	 * @param coreSize
@@ -25,6 +29,10 @@ public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecu
 	 * @param idleSecond
 	 * @param queueSize
 	 */
+=======
+	List<ThreadExceptionListener> exceptionListeners = new ArrayList<>();
+
+>>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
     public PortaThreadPool(int coreSize, int maxSize, int idleSecond, int queueSize) {
         super(coreSize, maxSize, idleSecond, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(queueSize));
     } 
@@ -62,5 +70,22 @@ public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecu
 	 */
 	public void addExceptionHandler(PortaThreadPoolExceptionHandler exceptionHandler) {
 		this.exceptionHandlers.add(exceptionHandler);
+	}
+
+	@Override
+	protected void afterExecute(Runnable r, Throwable t) {
+		if(t != null) {
+			for(ThreadExceptionListener threadExceptionListener : this.exceptionListeners) {
+				threadExceptionListener.receiveException(r, t);
+			}
+		}
+	}
+
+	public void addExceptionListener(ThreadExceptionListener exceptionListener) {
+		this.exceptionListeners.add(exceptionListener);
+	}
+
+	interface ThreadExceptionListener {
+		public void receiveException(Runnable r, Throwable t);
 	}
 }
