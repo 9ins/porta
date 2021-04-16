@@ -12,8 +12,9 @@ public class DBSessionTest {
     ExecutorService executorService;
     String url, dbUser, dbPasswd;
     long startMills, endMillis;
+    long totalRow = 0;
 
-    DBSessionTest(int threadCount, String url, String dbUser, String dbPasswd) throws ClassNotFoundException {
+    public DBSessionTest(int threadCount, String url, String dbUser, String dbPasswd) throws ClassNotFoundException {
         this.url = url;
         this.dbUser = dbUser;
         this.dbPasswd = dbPasswd;
@@ -29,7 +30,7 @@ public class DBSessionTest {
             Thread.sleep(delay);
         }
         this.executorService.shutdown();
-    }    
+    } 
 
     class SelectQueryTask extends Thread {
 
@@ -38,29 +39,30 @@ public class DBSessionTest {
         String query;
         //long startMills;
 
-        SelectQueryTask(String query) throws SQLException {
+        public SelectQueryTask(String query) throws SQLException {
             //this.startMills = System.currentTimeMillis();
             this.query = query;
-            this.dbConnection = DriverManager.getConnection(url, dbUser, dbPasswd);
         }
 
         public void run() {
             try {
+                this.dbConnection = DriverManager.getConnection(url, dbUser, dbPasswd);
                 this.stmt = this.dbConnection.createStatement();
                 ResultSet rs = this.stmt.executeQuery(this.query);
                 while(rs.next()) {
+                    totalRow++;
                     String result = rs.getString(1)+"  "+rs.getString(2)+"  "+rs.getString(3);
-                    System.out.println("[RESULT] "+result);
+                    System.out.println(result+"   "+totalRow);
                 }
                 rs.close();
                 this.stmt.close();
                 this.dbConnection.close();
-                //System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
+                System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
             } catch(SQLException e) {
                 e.printStackTrace();
             }
             long elapse = System.currentTimeMillis() - startMills;
-            System.out.println("Total Elapse Seconds: "+elapse/1000);
+            //System.out.println("Total Elapse Seconds: "+elapse/1000);
         }
     }
 
@@ -71,6 +73,6 @@ public class DBSessionTest {
         String passwd = "znjcmdlsh12";
         String query = "select * from innoquartz.job_drill_simple";
         DBSessionTest dbTest = new DBSessionTest(1, url, user, passwd);
-        dbTest.generate(300, 0, query);
+        dbTest.generate(1, 0, query);
     }
 }

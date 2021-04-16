@@ -29,7 +29,8 @@ public class SessionMappingConfigs implements Serializable {
 	private List<String> remoteHosts = new ArrayList<>();
 	private String sessionMode;
 	private String loadBalanceRatio;
-	private int standAloneRetry;
+	private int retry;
+	private long retryInterval;
 	private int failedCircularRetry;
 	private int bufferSize;
 	private int connectionTimeout;
@@ -37,8 +38,8 @@ public class SessionMappingConfigs implements Serializable {
 
 	SessionMappingConfigs() {}
 
-	public Map<String, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
-		Map<String, Object> map = new HashMap<String, Object>();
+	public Map<Object, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
+		Map<Object, Object> map = new HashMap<>();
 		Field[] fields = this.getClass().getDeclaredFields();
 		for (Field f : fields) {
 			map.put(f.getName(), f.get(this));
@@ -122,12 +123,12 @@ public class SessionMappingConfigs implements Serializable {
 		this.soTimeout = soTimeout;
 	}
 
-	public int getStandAloneRetry() {
-		return standAloneRetry;
+	public int getRetry() {
+		return retry;
 	}
 
-	public void setStandAloneRetry(int standAloneRetry) {
-		this.standAloneRetry = standAloneRetry;
+	public void setRetry(int retry) {
+		this.retry = retry;
 	}
 
 	public String getSessionMode() {
@@ -158,13 +159,29 @@ public class SessionMappingConfigs implements Serializable {
 		this.loadBalanceRatio = loadBalanceRatio;
 	}
 
+	public boolean getKeepAlive() {
+		return this.keepAlive;
+	}
+
+	public boolean getTcpNoDelay() {
+		return this.tcpNoDelay;
+	}
+
+	public long getRetryInterval() {
+		return this.retryInterval;
+	}
+
+	public void setRetryInterval(long retryInterval) {
+		this.retryInterval = retryInterval;
+	}
+
 	public SESSION_MODE getSessionModeEnum() throws PortaException {
 		if (sessionMode.equalsIgnoreCase("SA")) {
 			return SESSION_MODE.STAND_ALONE;
 		} else if (sessionMode.equalsIgnoreCase("HA_FO")) {
-			return SESSION_MODE.HIGI_AVAILABLE_FAIL_OVER;
+			return SESSION_MODE.HIGH_AVAILABLE_FAIL_OVER;
 		} else if (sessionMode.equalsIgnoreCase("HA_FB")) {
-			return SESSION_MODE.HIGI_AVAILABLE_FAIL_BACK;
+			return SESSION_MODE.HIGH_AVAILABLE_FAIL_BACK;
 		} else if (sessionMode.equalsIgnoreCase("LB_LR")) {
 			return SESSION_MODE.LOAD_BALANCE_ROUND_ROBIN;
 		} else if (sessionMode.equalsIgnoreCase("LB_SR")) {
@@ -173,8 +190,7 @@ public class SessionMappingConfigs implements Serializable {
 			try {
 				return SESSION_MODE.valueOf(sessionMode); 
 			} catch (Exception e) {
-				throw new PortaException("remoteMode",
-						new Object[]{"remoteMOde must be among STAND_ALONE / HIGH_AVAILABLE_FAIL_OVER / HIGH_AVAILABLE_FAIL_BACK / LOAD_BALANCE_ROUND_ROBIN / LOAD_BALANCE_SEPARATE_RATIO."});
+				throw new PortaException("remoteMode", new Object[]{"remoteMOde must be among STAND_ALONE / HIGH_AVAILABLE_FAIL_OVER / HIGH_AVAILABLE_FAIL_BACK / LOAD_BALANCE_ROUND_ROBIN / LOAD_BALANCE_SEPARATE_RATIO."});
 			}
 		}
 	}
@@ -186,13 +202,10 @@ public class SessionMappingConfigs implements Serializable {
 	 * @throws PortaException
 	 */
 	public List<Float> getLoadBalanceRatioList() throws PortaException {
-		if (loadBalanceRatio == null || remoteHosts.size() == 0
-				|| remoteHosts.size() != loadBalanceRatio.split(":").length) {
-			throw new PortaException("loadBalanceRatio",
-					new Object[]{"It must be same count between remote hosts count and Load-Balanced Ratio tokens in LOAD_BALANCE_SEPARATE_RATIO mode."});
+		if (loadBalanceRatio == null || remoteHosts.size() == 0 || remoteHosts.size() != loadBalanceRatio.split(":").length) {
+			throw new PortaException("loadBalanceRatio", new Object[]{"It must be same count between remote hosts count and Load-Balanced Ratio tokens in LOAD_BALANCE_SEPARATE_RATIO mode."});
 		}
-		return Arrays.asList(loadBalanceRatio.split(":")).stream().map(f -> Float.parseFloat(f))
-				.collect(Collectors.toList());
+		return Arrays.asList(loadBalanceRatio.split(":")).stream().map(f -> Float.parseFloat(f)).collect(Collectors.toList());
 	}
 
 	/**
@@ -202,8 +215,7 @@ public class SessionMappingConfigs implements Serializable {
 	 */
 	public Map<String, Float> getLoadBalanceRatioMap() {
 		Map<String, Float> map = new HashMap<>();
-		List<Float> ratioList = Arrays.asList(loadBalanceRatio.split(":")).stream().map(f -> Float.parseFloat(f))
-				.collect(Collectors.toList());
+		List<Float> ratioList = Arrays.asList(loadBalanceRatio.split(":")).stream().map(f -> Float.parseFloat(f)).collect(Collectors.toList());
 		float sum = 0.0f;
 		for (Float f : ratioList) {
 			sum += f;
@@ -252,7 +264,8 @@ public class SessionMappingConfigs implements Serializable {
 			", remoteHosts='" + remoteHosts + "'" +
 			", sessionMode='" + sessionMode + "'" +
 			", loadBalanceRatio='" + loadBalanceRatio + "'" +
-			", standAloneRetry='" + standAloneRetry + "'" +
+			", retry='" + retry + "'" +
+			", retryInterval='" + retryInterval + "'" +
 			", failedCircularRetry='" + failedCircularRetry + "'" +
 			", bufferSize='" + bufferSize + "'" +
 			", connectionTimeout='" + connectionTimeout + "'" +

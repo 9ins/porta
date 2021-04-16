@@ -2,6 +2,7 @@ import { createMuiTheme, makeStyles, withStyles } from '@material-ui/core/styles
 import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import MuiAlert from '@material-ui/lab/Alert';
+import Typography from '@material-ui/core/Typography';
 
 export const MessageAlert = withStyles({
   root: {
@@ -93,3 +94,12 @@ export const PrettoSlider = withStyles({
     border: '3px solid green',
   },
 })(Slider);
+
+
+export const WhiteTextTypography = withStyles({
+  root: {
+    color: "#FFFFFF"
+  }
+})(Typography);
+
+

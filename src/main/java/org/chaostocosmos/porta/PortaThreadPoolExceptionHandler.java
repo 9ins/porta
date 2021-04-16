@@ -1,6 +1,5 @@
 package org.chaostocosmos.porta;
 
-import org.chaostocosmos.porta.PortaSession.SessionTask;
 
 /**
  * Proxy Thread Pool Exception Handler
@@ -8,10 +7,8 @@ import org.chaostocosmos.porta.PortaSession.SessionTask;
 public interface PortaThreadPoolExceptionHandler {
 
     /**
-     * Handing exception;
-     * 
-     * @param task
+     * Handling exception
      * @param t
      */
-    public void handleException(SessionTask task, Throwable t);
+    public void handleException(Throwable t);
 }

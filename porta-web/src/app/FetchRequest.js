@@ -57,7 +57,6 @@ class FetchRequest extends Component {
                     data: callback.props.elements.map((e, index) => [...callback.state.data[index], { x: callback.state.data[index][callback.state.data[index].length - 1].x + 1, y: json[e] }]
                 )}
             )
-            console.log(callback.props);
             if (callback.props.name == "memory") {
                 callback.setState({
                     yDomain: [0, parseInt(json.systemTotal)]

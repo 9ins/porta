@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 
 import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.IResourceUsage;
+import org.chaostocosmos.porta.ISessionStatus;
 import org.chaostocosmos.porta.Logger;
 import org.chaostocosmos.porta.ModuleProvider;
 import org.chaostocosmos.porta.UNIT;
@@ -74,7 +75,6 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
 
     @Override
     public Map<Object, Object> toDoPost(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String body, Credentials credentials, Messages messages) throws ServletException, IOException {                
-        System.out.println(body);
         Map<String, String> reqMap = gson.fromJson(body, Map.class);
 
         Logger.getInstance().info("REQ MAP: "+reqMap);
@@ -85,7 +85,6 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
     public Map<Object, Object> toDoPostJson(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, String json, Credentials credentials, Messages messages) throws ServletException, IOException {
         Map<String, Object> reqMap = gson.fromJson(json, Map.class);
         RESOURCE type = RESOURCE.valueOf(request.getParameter("type"));
-        System.out.println("////////// "+reqMap.toString());
         try {
             switch(type) {
                 case THREAD_POOL:
@@ -145,5 +144,5 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
     public void setMaximumPoolSize(int size) throws Exception {
         ModuleProvider.getResourceManager().setMaximumPoolSize(size);
         PropertiesHelper.getInstance().getConfigs().getThreadPoolConfigs().setThreadPoolMaxSize(size);
-    }   
+    }
 }

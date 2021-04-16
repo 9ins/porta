@@ -8,10 +8,10 @@ managementConfigs: !!org.chaostocosmos.porta.properties.ManagementConfigs
   managementPort: 3232
   managementResourceBase: ./porta-web
 threadPoolConfigs: !!org.chaostocosmos.porta.properties.ThreadPoolConfigs
-  threadPoolCoreSize: 193
+  threadPoolCoreSize: 167
   threadPoolIdleSecond: 10
   threadPoolLimitSize: 1000
-  threadPoolMaxSize: 249
+  threadPoolMaxSize: 804
   threadPoolQueueSize: 30
 sessionMappingConfigs:
   mysql: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
@@ -32,7 +32,8 @@ sessionMappingConfigs:
     - 192.168.1.157:9336
     sessionMode: LOAD_BALANCE_ROUND_ROBIN
     soTimeout: 0
-    standAloneRetry: 3
+    retry: 3
+    retryInterval: 500
     tcpNoDelay: false
   kafka: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
     allowedHosts:
@@ -50,14 +51,15 @@ sessionMappingConfigs:
     - 192.168.1.152:8092
     sessionMode: STAND_ALONE
     soTimeout: 0
-    standAloneRetry: 3
+    retry: 3
+    retryInterval: 500
     tcpNoDelay: false
   oracle: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
     allowedHosts:
     - 127.0.0.1
     bindAddress: localhost
     bufferSize: 0
-    connectionTimeout: 3
+    connectionTimeout: 5
     failedCircularRetry: 6
     forbiddenHosts: [
       ]
@@ -67,6 +69,7 @@ sessionMappingConfigs:
     remoteHosts:
     - 192.168.1.157:1521
     sessionMode: STAND_ALONE
-    soTimeout: 60000
-    standAloneRetry: 3
+    soTimeout: 6000
+    retry: 3
+    retryInterval: 500
     tcpNoDelay: true

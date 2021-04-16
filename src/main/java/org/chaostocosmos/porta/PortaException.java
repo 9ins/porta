@@ -11,7 +11,7 @@ import org.chaostocosmos.porta.properties.PropertiesHelper;
  * @author 9ins
  * 2020. 11. 26.
  */
-public class PortaException extends Exception {
+public class PortaException extends RuntimeException {
 
 	String msgKey;
 	static PropertiesHelper propertiesHelper = PropertiesHelper.getInstance();	

@@ -11,13 +11,11 @@ import DoneOutlinedIcon from '@material-ui/icons/DoneOutlined';
 import Typography from '@material-ui/core/Typography';
 import { Snackbar, Button } from '@material-ui/core';
 import { chartCardThemes, dashboardThemes } from '../app/PortaThemes.js';
-import { PrettoSlider, ApplyButton } from '../widget/Widgets';
+import { PrettoSlider, ApplyButton, WhiteTextTypography } from '../widget/Widgets';
 import FetchRequest from '../app/FetchRequest';
 import { MessageAlert } from '../widget/Widgets'
 import Paper from '@material-ui/core/Paper';
 import {AutoSizer} from 'react-virtualized';
-
-
 import '../css/responsive_tabs.css';
 
 class Dashboard extends Component {
@@ -32,12 +30,17 @@ class Dashboard extends Component {
         elements: ['systemUsed', 'heapFree', 'memoryUsed'],
         labels: ['system', 'heapFree', 'memory'],
         refreshSec: 3,
-        dimension: [400, 250],
+        dimension: [380, 250],
         spacing: 5,
         direction: 'column',
         unit: 'GB',
-        content: 'This is memory status...',
-      },
+        content: (
+          <div>
+          <WhiteTextTypography variant='body2'>system: total memory usage of system.</WhiteTextTypography>
+          <WhiteTextTypography variant='body2'>heapFree: Porta heap free memory(Max - used).</WhiteTextTypography>
+          <WhiteTextTypography variant='body2'>memory: Porta used memory currently.</WhiteTextTypography>
+          </div>
+        )},
       cpu: {
         name: 'cpu',
         title: 'CPU status',
@@ -45,7 +48,7 @@ class Dashboard extends Component {
         elements: ['cpuLoad', 'systemCpuLoad'],
         labels: ['cpu', 'systemCpu'],
         refreshSec: 3,
-        dimension: [400, 250],
+        dimension: [380, 250],
         spacing: 5,
         direction: 'column',
         unit: '%',
@@ -56,12 +59,18 @@ class Dashboard extends Component {
         path: '/resources?type=THREAD&unit=CNT',
         elements: ['activeCount', 'corePoolSize', 'maxinumPoolSize', 'queueSize'],
         labels: ['active', 'core', 'max', 'queue'],
-        dimension: [250, 275],
+        dimension: [245, 275],
         yDomain: 220,
         refreshSec: 3,
         xDistance: 0,
         yDistance: 0,
       },
+      sessionSimple: {
+        name: 'sessionSimple',
+        title: 'Session Information',
+        path: '/session?type=SESSION_SIMPLE',
+      },
+      sessionSimpleJson: '',      
       alert: {
         open: false,
         message: '',
@@ -74,7 +83,6 @@ class Dashboard extends Component {
       queueSize: 0,
     }
     this.request = new FetchRequest();
-    console.log(window.innerWidth+"   "+window.innerWidth * 0.3);
   }
 
   componentDidMount() {
@@ -86,6 +94,12 @@ class Dashboard extends Component {
           limitPoolSize: json['limitPoolSize'],
           queueSize: json['queueSize'],
         });
+      })
+    this.request.fetchGetResource(this.state.sessionSimple.path)
+      .then(json => {
+        this.setState({
+          sessionSimpleJson: json,
+        })
       })
   }
 
@@ -113,7 +127,6 @@ class Dashboard extends Component {
       }
       this.res = this.request.fetchPostRequest(this.state.path, body);
       this.res.then(json => {
-        console.log(json);
         if (json['status'] === 'success') {
           this.setState({
             alert: {
@@ -227,6 +240,10 @@ class Dashboard extends Component {
           )}
             spacing={5}
             direction='column' />
+        </Grid>
+        <Grid item xs={12}>
+            <InformCard title={this.state.sessionSimple.title} content={this.state.sessionSimpleJson}>
+            </InformCard>
         </Grid>
       </Grid>
     )

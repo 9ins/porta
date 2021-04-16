@@ -30,7 +30,6 @@ class BarChart extends Component {
     }
 
     render() {
-        console.log("////////// "+this.state.width);
         const BarSeries = VerticalBarSeries;
         const { classes } = this.props;
         const bullet = <span className={classes.bullet}>•</span>;

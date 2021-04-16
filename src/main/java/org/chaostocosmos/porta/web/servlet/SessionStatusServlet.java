@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.ISessionStatus;
 import org.chaostocosmos.porta.Logger;
+import org.chaostocosmos.porta.ModuleProvider;
 import org.chaostocosmos.porta.PortaException;
 import org.chaostocosmos.porta.RESOURCE;
 import org.chaostocosmos.porta.UNIT;
@@ -39,44 +40,54 @@ public class SessionStatusServlet extends AbstractHttpServlet implements ISessio
     }
 
     @Override
-    public Map<Object, Object> toDoGet(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramValueMap, Credentials credentials, Messages messages) throws ServletException, IOException {
+    public Map<Object, Object> toDoGet(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, Credentials credentials, Messages messages) throws ServletException, IOException, PortaException {
         System.out.println("############# GET : " + request.getQueryString());
         System.out.println(request.getParameterMap().toString());
-        RESOURCE type = RESOURCE.valueOf(request.getParameter("type"));
-        UNIT unit = UNIT.valueOf(request.getParameter("unit"));
+        String typeParam = request.getParameter("type");
         String sessionName = request.getParameter("name");
-        Map<Object, Object> map = new LinkedHashMap<>();
+        if(typeParam == null) {
+            throw new PortaException("ERRCODE010", null);
+        }
+        RESOURCE type = RESOURCE.valueOf(typeParam);
         try {
             switch (type) {
                 case SESSION_INFO:
-                map = getSessionInfo(sessionName);
+                paramMap = getSessionInfo(sessionName);
                 break;
                 case SESSIONS_INFO:
-                map = getSessionsInfo();
+                paramMap = getSessionsInfo();
+                break;
+                case SESSION_SIMPLE:
+                paramMap = getSessionSimple();
                 break;
                 case SESSION_USAGE:
-                map = getSessionUsage(sessionName);
+                paramMap = getSessionUsage(sessionName);                
                 break;
                 case SESSIONS_USAGE:
-                map = getSessionsUsage();
+                paramMap = getSessionsUsage();
                 break;
                 case SESSION_THROUGHPUT:
-                map = getSessionThroughput(sessionName);
+                paramMap = getSessionThroughput(sessionName);
                 break;
                 case SESSIONS_THROUGHPUT:
-                map = getSessionsThroughput();
+                paramMap = getSessionsThroughput();
                 break;
                 default:
                 throw new PortaException("ERRCODE001", new Object[]{type});
             }
+            paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
+            paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
+            paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
+            paramMap.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(paramMap));        
+            return paramMap;
         } catch (Exception e) {
             Logger.getInstance().throwable(e);
+            paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
+            paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
+            paramMap.put(RESPONSE.RESPONSE_CONTENT, e.getMessage());
+            return paramMap;            
         }
-        map.put(RESPONSE.CONTENT_TYPE, "application/json");
-        map.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
-        map.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
-        map.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(map));        
-        return map;
     }
 
     @Override
@@ -110,8 +121,7 @@ public class SessionStatusServlet extends AbstractHttpServlet implements ISessio
     }
 
     @Override
-    public Map<Object, Object> getSessionsUsage() throws Exception {
-        
+    public Map<Object, Object> getSessionsUsage() throws Exception {        
         return null;
     }
 
@@ -123,5 +133,10 @@ public class SessionStatusServlet extends AbstractHttpServlet implements ISessio
     @Override
     public Map<Object, Object> getSessionsThroughput() throws Exception {
         return null;
+    }
+
+    @Override
+    public Map<Object, Object> getSessionSimple() throws Exception {        
+        return ModuleProvider.getResourceManager().getSessionSimple();
     }
 }
