@@ -8,10 +8,10 @@ managementConfigs: !!org.chaostocosmos.porta.properties.ManagementConfigs
   managementPort: 3232
   managementResourceBase: ./porta-web
 threadPoolConfigs: !!org.chaostocosmos.porta.properties.ThreadPoolConfigs
-  threadPoolCoreSize: 167
+  threadPoolCoreSize: 30
+  threadPoolMaxSize: 50
   threadPoolIdleSecond: 10
   threadPoolLimitSize: 1000
-  threadPoolMaxSize: 804
   threadPoolQueueSize: 30
 sessionMappingConfigs:
   mysql: !!org.chaostocosmos.porta.properties.SessionMappingConfigs

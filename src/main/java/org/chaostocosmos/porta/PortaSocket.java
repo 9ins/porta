@@ -45,7 +45,6 @@ public class PortaSocket {
 	}
 
 	public void connect() throws IOException {	
-		System.out.println(this.sm.toString());
 		this.remote = new Socket();
 		this.remote.setSoTimeout(sm.getSoTimeout());
 		this.remote.setKeepAlive(sm.isKeepAlive());
@@ -54,9 +53,7 @@ public class PortaSocket {
 			this.remote.setSendBufferSize(sm.getBufferSize());
 		}
 		this.remote.setTcpNoDelay(sm.isTcpNoDelay());
-		System.out.println("////////////////////////////////");
 		this.remote.connect(new InetSocketAddress(this.remoteHost, this.port), this.connectionTimeout);
-		System.out.println("//////////////////////////////// connected.....");
 	}
 
 	public void close() throws IOException {

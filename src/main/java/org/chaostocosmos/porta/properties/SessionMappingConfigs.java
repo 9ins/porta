@@ -245,7 +245,6 @@ public class SessionMappingConfigs implements Serializable {
 	}
 
 	public boolean isForbiddenHost(String host, int port) {
-		System.out.println("HOST NAME: " + host + "   " + port);
 		if (this.forbiddenHosts.contains(host + ":" + port) || this.forbiddenHosts.contains(host + ":*")) {
 			return true;
 		}

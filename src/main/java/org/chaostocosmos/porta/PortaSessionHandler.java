@@ -34,8 +34,7 @@ public class PortaSessionHandler {
 	 * @throws UnknownHostException
 	 * @throws IOException
 	 */
-	public PortaSessionHandler(PropertiesHelper configHandler, PortaThreadPool proxyThreadPool)
-			throws FileNotFoundException {
+	public PortaSessionHandler(PropertiesHelper configHandler, PortaThreadPool proxyThreadPool) throws FileNotFoundException {
 		this.configHandler = configHandler;
 		this.proxyThreadPool = proxyThreadPool;
 		this.sessionMap = new HashMap<>();

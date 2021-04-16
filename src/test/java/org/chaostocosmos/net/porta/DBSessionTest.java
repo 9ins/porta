@@ -57,7 +57,7 @@ public class DBSessionTest {
                 rs.close();
                 this.stmt.close();
                 this.dbConnection.close();
-                System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills));
+                System.out.println("Elapse time millis: "+(System.currentTimeMillis()-startMills)+"   Toal row: "+totalRow);
             } catch(SQLException e) {
                 e.printStackTrace();
             }
@@ -67,12 +67,12 @@ public class DBSessionTest {
     }
 
     public static void main(String[] args) throws InterruptedException, SQLException, ClassNotFoundException {        
-        String url = "jdbc:oracle:thin:@localhost:1521:cdb1";
-        //String url = "jdbc:oracle:thin:@192.168.1.157:1521:cdb1";
+        //String url = "jdbc:oracle:thin:@localhost:1521:cdb1";
+        String url = "jdbc:oracle:thin:@192.168.1.157:1521:cdb1";
         String user = "innoquartz";
         String passwd = "znjcmdlsh12";
         String query = "select * from innoquartz.job_drill_simple";
         DBSessionTest dbTest = new DBSessionTest(1, url, user, passwd);
-        dbTest.generate(1, 0, query);
+        dbTest.generate(1000, 0, query);
     }
 }

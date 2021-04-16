@@ -6,12 +6,12 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -30,8 +30,8 @@ public class PortaSession implements Runnable {
 	Thread thread;
 	SessionMappingConfigs sessionMapping;
 	Logger logger;
-	Map<String, InteractiveChannel> sendChannelMap; 
-	Map<String, InteractiveChannel> receiveChannelMap;
+	Map<String, ChannelWorker> sendChannelMap; 
+	Map<String, ChannelWorker> receiveChannelMap;
 	ServerSocket proxyServer;
 	PortaThreadPool threadPool;
 	boolean standAloneFailed = false;
@@ -58,6 +58,8 @@ public class PortaSession implements Runnable {
 		this.loadBalancedStatus = IntStream.range(0, this.sessionMapping.getRemoteHosts().size()).boxed()
 				.map(i -> new AbstractMap.SimpleEntry<Integer, Boolean>(i, true))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		this.logger.setInfo(false);
 	}
 
 	/**
@@ -149,7 +151,7 @@ public class PortaSession implements Runnable {
 				} else {
 					if (sessionMapping.getAllowedHosts().size() == 0 || sessionMapping.getAllowedHosts().stream().anyMatch(h -> h.equals(client.getLocalAddress().getHostAddress()))) {
 						logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Client channel connected. " + client.getRemoteSocketAddress().toString());
-						SessionTask task = new SessionTask(sessionName, sessionMapping, client);
+						ChannelWorker task = new ChannelWorker(sessionName, client, sessionMapping);
 						logger.info("[" + sessionName + "] new client is connected. Clinet: " + client.getRemoteSocketAddress().toString() + " ------------------- connected.");
 						this.threadPool.execute(task);
 					} else {
@@ -189,17 +191,23 @@ public class PortaSession implements Runnable {
 	}
 
 	/**
-	 * Channel task class
+	 * Channel worker class
 	 */
-	public class ChannelTask extends Thread {
+	public class ChannelWorker extends Thread {
 
 		String sessionName;
 		SessionMappingConfigs sessionMapping;
 		Socket client;
-		List<String> remotes;
+		List<String> remotes;		
 		long transactionStartMillis;
 
-		public ChannelTask(String sessionName, SessionMappingConfigs sessionMapping, Socket client) {
+		/**
+		 * Constructor
+		 * @param sessionName
+		 * @param client
+		 * @param sessionMapping
+		 */
+		public ChannelWorker(String sessionName, Socket client, SessionMappingConfigs sessionMapping) {
 			this.transactionStartMillis = System.currentTimeMillis();
 			this.sessionName = sessionName;
 			this.sessionMapping = sessionMapping;
@@ -216,17 +224,7 @@ public class PortaSession implements Runnable {
 			return this.sessionName;
 		}
 
-		/**
- 		 * Start instract between client and remote host.
-		 * @param sessionName
-		 * @param channel
-		 * @throws Exception
-		 */
-		private void startInteraction(String sessionName, PortaSocket portaSocket) throws Exception {
-			InteractiveChannel sendChannel = new InteractiveChannel(sessionName + "-Send", portaSocket, false, transactionStartMillis);
-			InteractiveChannel receiveChannel = new InteractiveChannel(sessionName + "-Receive", portaSocket, true, transactionStartMillis);
-			threadPool.execute(sendChannel);
-			threadPool.execute(receiveChannel);
+		public void close() throws IOException {
 		}
 
 		@Override
@@ -241,12 +239,13 @@ public class PortaSession implements Runnable {
 						throw new PortaException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName	+ "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()	+ "] Stand Alone session must have just one remote channel. Check the seesion configuration in config yaml!!!");
 					}
 					PortaSocket channel = new PortaSocket(this.client, this.sessionMapping, 0);
-					int retry = sessionMapping.getStandAloneRetry();
+					int retry = sessionMapping.getRetry();
 					for (int i = 0; i < retry; i++) {
 						try {
 							channel.connect();
-							startInteraction(sessionName, channel);
-							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Remote channel connected. " + channel.getRemoteAddress().toString());
+							ChannelTask channelTask = new ChannelTask(sessionName, channel);
+							channelTask.interact();
+							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Remote channel connected. " + this.sessionMapping.getRemoteHosts().toString());
 							standAloneFailed = false;
 							totalSuccessCount++;
 							break;
@@ -281,7 +280,8 @@ public class PortaSession implements Runnable {
 						PortaSocket master = new PortaSocket(this.client, sessionMapping, 0);
 						try {
 							master.connect();
-							startInteraction(sessionName, master);
+							ChannelTask channelTask = new ChannelTask(sessionName, master);
+							channelTask.interact();
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Master channel connected. " + master.getRemoteAddress().toString());
 							masterSessionFailed = false;
 							totalSuccessCount++;
@@ -299,7 +299,8 @@ public class PortaSession implements Runnable {
 						PortaSocket slave = new PortaSocket(this.client, sessionMapping, 1);
 						try {
 							slave.connect();
-							startInteraction(sessionName, slave);
+							ChannelTask channelTask = new ChannelTask(sessionName, slave);
+							channelTask.interact();
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Slave channel connected. " + slave.getRemoteAddress().toString());
 							slaveSessionFailed = false;
 							totalSuccessCount++;
@@ -329,7 +330,8 @@ public class PortaSession implements Runnable {
 						PortaSocket channel = new PortaSocket(this.client, sessionMapping, channelIndex);
 						try {
 							channel.connect();
-							startInteraction(sessionName, channel);
+							ChannelTask channelTask = new ChannelTask(sessionName, channel);
+							channelTask.interact();
 							totalSuccessCount++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Load-Balanced Round-Robin channel connected. Channel index: " + channelIndex + "  Host: " + channel.getRemoteAddress().toString());
 							break;
@@ -365,7 +367,8 @@ public class PortaSession implements Runnable {
 						PortaSocket channel = new PortaSocket(this.client, sessionMapping, randomIndex);
 						try {
 							channel.connect();
-							startInteraction(sessionName, channel);
+							ChannelTask channelTask = new ChannelTask(sessionName, channel);
+							channelTask.interact();
 							totalSuccessCount++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Load-Balance Separate Ratio Distribution Channel connected. Channel index: " + randomIndex + "  Host: " + sessionMapping.getRemoteHosts().get(randomIndex).toString());
 							break;
@@ -400,85 +403,108 @@ public class PortaSession implements Runnable {
 				logger.throwable(e);
 			}
 		}
-	}
+	}	
 
 	/**
-	 * InteractiveThread
+	 * ChannelTask
 	 *
 	 * @author 9ins 2020. 11. 19.
 	 */
-	public class InteractiveChannel extends Thread { 
+	public class ChannelTask { 
 
-		boolean isDone = false;
+		boolean sendDone, receiveDone;
 		String channelName;
-		boolean isReceive;
-		PortaSocket channel;
-		InputStream is;
-		OutputStream os;
+		final Socket client, remote;
 		long startMillis;
+		long totalSendBytes;
+		long totalReceiveBytes;
+		CountDownLatch latch = new CountDownLatch(1);
 
 		/**
 		 * Constructor
 		 * 
 		 * @param channelName
-		 * @param socket
+		 * @param channel
 		 * @throws IOException
 		 */
-		public InteractiveChannel(String channelName, PortaSocket channel, boolean isReceive, long startMillis)
-				throws IOException {
+		public ChannelTask(String channelName, PortaSocket channel) throws IOException {
 			this.channelName = channelName;
-			this.channel = channel;
-			this.isReceive = isReceive;
-			if(this.isReceive) {
-				this.is = this.channel.getInputStream();
-				this.os = this.channel.getClientSocket().getOutputStream();	
-			} else {
-				this.is = this.channel.getClientSocket().getInputStream();
-				this.os = this.channel.getOutputStream();	
-			}
-			this.startMillis = startMillis;
+			this.client = channel.getClientSocket();
+			this.remote = channel.getRemoteSocket();
+			this.startMillis = System.currentTimeMillis();
 		}
 
-		@Override
-		public void run() {
-			logger.info("[" + this.channelName + "] Channel Open. ");
-			final int bufferSize = sessionMapping.getBufferSize() == 0 ? 1024 : sessionMapping.getBufferSize();
-			byte[] buffer = new byte[bufferSize];
+		/**
+		 * Interact
+		 */
+		public void interact() {
+			logger.info("[" + this.channelName + "] Channel Opening......");
+			final int bufferSize = sessionMapping.getBufferSize() == 0 ? 1024 * 8 : sessionMapping.getBufferSize();
 			try {
-				long total = 0;
-				int read;
-				while (( read = this.is.read(buffer) ) > 0) {
-					if (total < 1024) {
-						//System.out.println(new String(buffer));
+				Thread sendThr = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						InputStream is = null;
+						OutputStream os = null;
+						try {
+							if(client.isClosed() || remote.isClosed()) {
+								return;
+							}
+							is = client.getInputStream();
+							os = remote.getOutputStream();
+							int read;
+							byte[] buffer = new byte[bufferSize];
+							while (( read = is.read(buffer) ) > 0) {
+								os.write(buffer, 0, read);
+								os.flush();
+								totalSendBytes += read;
+							}
+							is.close();
+							os.close();
+							sendDone = true;
+						} catch(IOException e) {
+							throw new RuntimeException(e);
+						} finally {
+							latch.countDown();
+						} 
 					}
+				});
+				sendThr.start();
+				if(client.isClosed() || remote.isClosed()) {
+					return;
+				}
+				InputStream is = remote.getInputStream();
+				OutputStream os = client.getOutputStream();
+				int read;
+				byte[] buffer = new byte[bufferSize];
+				while (( read = is.read(buffer) ) > 0) {
 					os.write(buffer, 0, read);
 					os.flush();
-					total += read;
+					totalSendBytes += read;
 				}
-				isDone = true;
+				is.close();
+				os.close();
+				receiveDone = true;
 			} catch (Exception e) {
-				// May socket closed. Afterword, the logic might to be modified.
-				if(!this.channel.isConnected()) {
-					Logger.getInstance().throwable(e);
-				}
+				throw new RuntimeException(e);
 			} finally {
 				try {
+					latch.await();
 					close();
-				} catch (IOException e) {
-					
+				} catch (Exception e) {
+					throw new RuntimeException(e);
 				}
 			}
 		}
 
 		public void close() throws IOException {
-			if(this.channel.isConnected()) {
-				this.channel.close();
+			if(this.remote != null) {
+				this.remote.close();
+			}
+			if(this.client != null) {
+				this.client.close();
 			}
 			logger.info("[" + this.channelName + "] Channel Closed.  Channel Elapse Time Millis: " + (System.currentTimeMillis() - startMillis));
-		}
-
-		public boolean isDone() {
-			return this.isDone;
 		}
 	}
 }

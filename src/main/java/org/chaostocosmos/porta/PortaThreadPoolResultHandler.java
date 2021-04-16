@@ -1,5 +1,7 @@
 package org.chaostocosmos.porta;
 
+import org.chaostocosmos.porta.PortaSession.ChannelWorker;
+
 /**
  * PortaThreadPoolResultHandler class
  */
