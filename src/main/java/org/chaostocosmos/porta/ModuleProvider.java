@@ -9,7 +9,7 @@ import org.chaostocosmos.porta.web.ManagementServer;
  */
 public class ModuleProvider {
 
-    private static PortaMain portaMain;
+    private static PortaApp portaMain;
 	private static Context context;
 	private static PortaSessionHandler portaSessionHandler;
 	private static Map<String, PortaSession> portaSessionMap;
@@ -21,17 +21,17 @@ public class ModuleProvider {
      * Constructor
      * @param portaMain_
      */
-    public ModuleProvider(PortaMain portaMain_) {
+    public ModuleProvider(PortaApp portaMain_) {
         portaMain = portaMain_;
         context = portaMain.getContext();
         portaSessionHandler = portaMain.getPortaSessionHandler();
         portaSessionMap = portaSessionHandler.getPortaSessionMap();
         portaThreadPool = portaMain.getPortaThreadPool();
         managementServer = portaMain.getManagementServer();
-        resourceManager = portaMain.getResourceManager();
+        resourceManager = portaMain.getResourceManager(); 
     }
 
-    public static PortaMain getPortaMain() {
+    public static PortaApp getPortaMain() {
         return portaMain;
     }    
 

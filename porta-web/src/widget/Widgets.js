@@ -3,6 +3,7 @@ import Button from '@material-ui/core/Button';
 import Slider from '@material-ui/core/Slider';
 import MuiAlert from '@material-ui/lab/Alert';
 import Typography from '@material-ui/core/Typography';
+import { themeColor } from '../app/PortaThemes'
 
 export const MessageAlert = withStyles({
   root: {
@@ -99,6 +100,15 @@ export const PrettoSlider = withStyles({
 export const WhiteTextTypography = withStyles({
   root: {
     color: "#FFFFFF"
+  }
+})(Typography);
+
+export const SessionNameTypography = withStyles({
+  root: {
+    color: themeColor,
+    fontSize: 12,
+    fontStyle: 'bold',
+    font: 'arial'
   }
 })(Typography);
 

@@ -1,6 +1,5 @@
 package org.chaostocosmos.porta;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -23,19 +22,18 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
         } 
     }
 
-    PortaMain portaMain;
+    PortaApp portaApp; 
+    Context context;
     Timer probeTimer;
     long statisticsProbeMillis;
     
-    Map<String, Object> resourceMap;
-
     /**
      * ResourceManager 
-     * @param portaMain
+     * @param portaApp
      */
-    public ResourceManager(PortaMain portaMain) {
-        this.portaMain = portaMain;
-        this.resourceMap = new LinkedHashMap<>();        
+    public ResourceManager(PortaApp portaApp, Context context) {
+        this.portaApp = portaApp;
+        this.context = context;
         this.statisticsProbeMillis = PropertiesHelper.getInstance().getConfigs().getAppConfigs().getStatisticsProbeMillis();
         this.probeTimer = new Timer();
         this.probeTimer.schedule(new ProbeTask(), this.statisticsProbeMillis, this.statisticsProbeMillis);
@@ -77,13 +75,14 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
 
     @Override
     public Map<Object, Object> getSessionInfo(String sessionName) throws Exception {
-        SessionMappingConfigs sessionMapping = this.portaMain.getContext().getConfigs().getSessionMappingConfigs(sessionName);        
+        SessionMappingConfigs sessionMapping = this.portaApp.getContext().getConfigs().getSessionMappingConfigs(sessionName);        
         return sessionMapping.getSessionMappingMap();
     }
 
     @Override
-    public Map<Object, Object> getSessionsInfo() throws Exception {        
-        return this.portaMain.getContext().getConfigs().getSessionMapping().entrySet().stream().collect(Collectors.toMap(k -> k, v -> v.getValue()));
+    public Map<Object, Object> getSessionsInfo() throws Exception {
+        Map<String, SessionMappingConfigs> sessionMap = this.portaApp.getContext().getConfigs().getSessionMapping();
+        return sessionMap.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue()));        
     }
 
     @Override
@@ -140,14 +139,14 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
     @Override
     public Map<Object, Object> getThreadPoolUsage(UNIT unit) throws Exception {
         Map<Object, Object> map = new LinkedHashMap<>();
-        int activeCount = this.portaMain.getPortaThreadPool().getActiveCount();
-        int corePoolSize = this.portaMain.getPortaThreadPool().getCorePoolSize();
-        int largestPoolSize = this.portaMain.getPortaThreadPool().getLargestPoolSize();
-        int maxinumPoolSize = this.portaMain.getPortaThreadPool().getMaximumPoolSize();
+        int activeCount = this.portaApp.getPortaThreadPool().getActiveCount();
+        int corePoolSize = this.portaApp.getPortaThreadPool().getCorePoolSize();
+        int largestPoolSize = this.portaApp.getPortaThreadPool().getLargestPoolSize();
+        int maxinumPoolSize = this.portaApp.getPortaThreadPool().getMaximumPoolSize();
         int threadPoolLimitSize = PropertiesHelper.getInstance().getConfigs().getThreadPoolConfigs().getThreadPoolLimitSize();
-        long completedTaskCount = this.portaMain.getPortaThreadPool().getCompletedTaskCount();
-        long taskCount = this.portaMain.getPortaThreadPool().getTaskCount();
-        int queueSize = this.portaMain.getPortaThreadPool().getQueue().size();
+        long completedTaskCount = this.portaApp.getPortaThreadPool().getCompletedTaskCount();
+        long taskCount = this.portaApp.getPortaThreadPool().getTaskCount();
+        int queueSize = this.portaApp.getPortaThreadPool().getQueue().size();
         map.put("activeCount", activeCount);
         map.put("corePoolSize", corePoolSize);
         map.put("largestPoolSize", largestPoolSize);
@@ -161,20 +160,61 @@ public class ResourceManager implements IResourceUsage, ISessionStatus{
 
     @Override
     public void setCorePoolSize(int size) throws Exception {
-        System.out.println("setting core pool size: "+size);
-        this.portaMain.getPortaThreadPool().setCorePoolSize(size);
+        this.portaApp.getPortaThreadPool().setCorePoolSize(size);
     }
 
     @Override
     public void setMaximumPoolSize(int size) throws Exception {
-        this.portaMain.getPortaThreadPool().setMaximumPoolSize(size);
+        this.portaApp.getPortaThreadPool().setMaximumPoolSize(size);
     }
 
-    @Override
+    @Override    
     public Map<Object, Object> getSessionSimple() throws Exception {
         Configs config = PropertiesHelper.getInstance().getConfigs();
         Map<String, SessionMappingConfigs> sessionMap = config.getSessionMapping();
-        Map<Object, Object> map = new HashMap<>();        
-        return sessionMap.entrySet().stream().collect(Collectors.toMap(k -> k, v -> v.getValue()));
+        Map<Object, Object> map = sessionMap.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue()));        
+        return map;
+    }
+
+    @Override
+    public void applySessionInfo(String sessionName, Map<Object, Object> sessionInfoMap) throws Exception {
+        PropertiesHelper propertiesHelper = PropertiesHelper.getInstance();
+        SessionMappingConfigs sessionMappingConfig = propertiesHelper.getConfigs().getSessionMappingConfigs(sessionName);
+        sessionMappingConfig.setSessionMappingMap(sessionInfoMap);
+        PortaSessionHandler sessionHandler = this.portaApp.getPortaSessionHandler();
+        sessionHandler.closeSession(sessionName);
+        PortaSession portaSession = sessionHandler.createProxySession(sessionName, sessionMappingConfig);
+        portaSession.start();
+        saveSessionInfo(sessionName, sessionInfoMap);
+    }
+
+    @Override
+    public void saveSessionInfo(String sessionName, Map<Object, Object> sessionInfoMap) throws Exception {
+        PropertiesHelper propertiesHelper = PropertiesHelper.getInstance();
+        propertiesHelper.getConfigs().getSessionMappingConfigs(sessionName).setSessionMappingMap(sessionInfoMap);
+        propertiesHelper.dumpConfigs();
+    }
+
+    @Override
+    public void applySessionInfos(Map<String, Map<Object, Object>> sessionsInfoMap) throws Exception {
+        for(Map.Entry<String, Map<Object, Object>> entry : sessionsInfoMap.entrySet()) {
+            String sessionName = entry.getKey();
+            SessionMappingConfigs sessionMappingConfig = PropertiesHelper.getInstance().getConfigs().getSessionMappingConfigs(sessionName);
+            sessionMappingConfig.setSessionMappingMap(entry.getValue());                
+            PortaSessionHandler sessionHandler = this.portaApp.getPortaSessionHandler();
+            sessionHandler.closeSession(sessionName);
+            PortaSession portaSession = sessionHandler.createProxySession(sessionName, sessionMappingConfig);
+            portaSession.start();
+        }
+        saveSessionInfos(sessionsInfoMap);
+    }
+
+    @Override
+    public void saveSessionInfos(Map<String, Map<Object, Object>> sessionsInfoMap) throws Exception {
+        PropertiesHelper propertiesHelper = PropertiesHelper.getInstance();
+        for(Map.Entry<String, Map<Object, Object>> entry : sessionsInfoMap.entrySet()) {
+            propertiesHelper.getConfigs().getSessionMappingConfigs(entry.getKey()).setSessionMappingMap(entry.getValue());
+        }
+        propertiesHelper.dumpConfigs();
     }
 }

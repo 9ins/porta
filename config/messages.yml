@@ -6,7 +6,10 @@ system:
 
 message:
   MSGCODE001: 'Thread pool configuration is successful applied...'
-  MSGCODE002:
+  MSGCODE002: 'Seesion [ $ ] configuration is applied...'
+  MSGCODE003: 'Session [ $ ] configuration is saved...'
+  MSGCODE004: 'All session configurations is applied...'
+  MSGCODE005: 'All session configurations is saved...'
 
 debug: 
   DEBUG001: 

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.chaostocosmos.porta.Context;
 import org.chaostocosmos.porta.IResourceUsage;
@@ -30,7 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class ResourceUsageServlet extends AbstractHttpServlet implements IResourceUsage {
 
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().disableHtmlEscaping().create();
     Context context;
 
     /**
@@ -48,17 +49,17 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
     public Map<Object, Object> toDoGet(HttpServletRequest request, HttpServletResponse response, Map<Object, Object> paramMap, Credentials credentials, Messages messages) throws ServletException, IOException {
         RESOURCE type = RESOURCE.valueOf(request.getParameter("type"));
         UNIT unit = UNIT.valueOf(request.getParameter("unit"));
-        Map<Object, Object> map = new LinkedHashMap<>();
+        Map<Object, Object> resMap = new LinkedHashMap<>();
         try {
             switch(type) {
                 case CPU:
-                map = getCpuUsage(unit);
+                resMap = getCpuUsage(unit);
                 break;
                 case MEMORY:
-                map = getMemoryUsage(unit);
+                resMap = getMemoryUsage(unit);
                 break;
                 case THREAD:
-                map = getThreadPoolUsage(unit);
+                resMap = getThreadPoolUsage(unit);
                 break;
                 default:
                 throw new PortaException("ERRCODE001", new Object[]{type});
@@ -69,7 +70,7 @@ public class ResourceUsageServlet extends AbstractHttpServlet implements IResour
         paramMap.put(RESPONSE.CONTENT_TYPE, "application/json");
         paramMap.put(RESPONSE.RESPONSE_CODE, HttpServletResponse.SC_OK);
         paramMap.put(RESPONSE.RESPONSE_TYPE, RESPONSE_TYPE.JSON);
-        paramMap.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(map));
+        paramMap.put(RESPONSE.RESPONSE_CONTENT, this.gson.toJson(resMap));
         return paramMap;
     }
 

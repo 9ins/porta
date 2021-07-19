@@ -5,6 +5,41 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "Launch KafkaPublishTest",
+            "request": "launch",
+            "mainClass": "org.chaostocosmos.net.porta.KafkaPublishTest",
+            "projectName": "porta"
+        },
+        {
+            "type": "java",
+            "name": "Launch PortaApp",
+            "request": "launch",
+            "mainClass": "org.chaostocosmos.porta.PortaApp",
+            "projectName": "porta"
+        },
+        {
+            "type": "java",
+            "name": "Launch ComplementTest",
+            "request": "launch",
+            "mainClass": "org.chaostocosmos.net.porta.ComplementTest",
+            "projectName": "porta"
+        },
+        {
+            "type": "java",
+            "name": "Launch UtilBox",
+            "request": "launch",
+            "mainClass": "org.chaostocosmos.porta.UtilBox",
+            "projectName": "porta"
+        },
+        {
+            "type": "java",
+            "name": "Launch PortaAppTest",
+            "request": "launch",
+            "mainClass": "org.chaostocosmos.net.porta.PortaAppTest",
+            "projectName": "porta"
+        },
+        {
             "name": "Java",
             "type": "java",
             "request": "launch",

@@ -3,12 +3,15 @@ package org.chaostocosmos.porta.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,13 +24,16 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.chaostocosmos.porta.Constants;
 import org.chaostocosmos.porta.Logger;
 import org.chaostocosmos.porta.PortaException;
-import org.chaostocosmos.porta.PortaMain;
+import org.chaostocosmos.porta.PortaApp;
 import org.chaostocosmos.porta.UtilBox;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.Yaml;
 
 /**
@@ -52,7 +58,7 @@ public class PropertiesHelper {
 	 * @throws ClassNotFoundException
 	 */
 	public static PropertiesHelper getInstance() {
-		return getInstance(PortaMain.configPath);
+		return getInstance(PortaApp.configPath);
 	}
 
 	/**
@@ -120,9 +126,10 @@ public class PropertiesHelper {
 			String className = (fname.charAt(0)+"").toUpperCase()+fname.subSequence(1, fname.lastIndexOf("."));
 			String cname = this.getClass().getPackage().getName()+"."+className;
 			Class cls = Class.forName(cname);
-			Constructor constructor = new Constructor(cls);
-			Yaml yaml = new Yaml(constructor);
-			Object obj = yaml.load(new FileInputStream(path.toFile()));
+			Representer representer = new Representer();
+			representer.addClassTag(cls.getClass(), Tag.MAP);	
+			Yaml yaml = new Yaml(representer);
+			Object obj = yaml.loadAs(new FileInputStream(path.toFile()), cls);
 			this.configsMap.put(path.toFile(), obj);
 		}
 	}
@@ -135,7 +142,7 @@ public class PropertiesHelper {
 	 * @throws IOException
 	 */
 	public void dumpConfigs() throws IllegalArgumentException, IllegalAccessException, IOException {
-		dumpConfigs(this.configsPath);
+		dumpConfigs(this.configsPath, Constants.defaultCharset);
 	}
 
 	/**
@@ -146,9 +153,9 @@ public class PropertiesHelper {
 	 * @throws IllegalAccessException
 	 * @throws IOException
 	 */
-	public void dumpConfigs(Path configPath) throws IllegalArgumentException, IllegalAccessException, IOException {
+	public void dumpConfigs(Path configPath, Charset charset) throws IllegalArgumentException, IllegalAccessException, IOException {
 		for(Map.Entry<File, Object> entry : this.configsMap.entrySet()) {
-			dump(entry.getKey(), entry.getValue());
+			dump(entry.getKey(), entry.getValue(), charset);
 		}
 	}
 
@@ -165,7 +172,7 @@ public class PropertiesHelper {
 		if(file == null) {
 			throw new PortaException("ERRCODE009", new Object[]{"name"});
 		}
-		dump(file, this.configsMap.get(file));
+		dump(file, this.configsMap.get(file), Constants.defaultCharset);
 	}
 
 	/**
@@ -176,13 +183,16 @@ public class PropertiesHelper {
 	 * @throws IllegalAccessException
 	 * @throws IllegalArgumentException
 	 */
-	public void dump(File file, Object obj) throws IOException, IllegalArgumentException, IllegalAccessException {
+	public void dump(File file, Object obj, Charset charset) throws IOException, IllegalArgumentException, IllegalAccessException {
 		DumperOptions options = new DumperOptions();
 		options.setDefaultFlowStyle(FlowStyle.BLOCK);
+		options.setIndent(4);
 		options.setPrettyFlow(true);
-		Yaml yml = new Yaml(options);
-		Map<String, Object> map = getMap(obj);
-		yml.dump(map, new FileWriter(file));
+		Representer representer = new Representer();
+		representer.addClassTag(obj.getClass(), Tag.MAP);
+		Yaml yml = new Yaml(representer, options);
+		Map<String, Object> map = getMap(obj);		
+		yml.dump(map, new OutputStreamWriter(new FileOutputStream(file), charset.name()));
 	}
 
 	/**
@@ -323,7 +333,6 @@ public class PropertiesHelper {
 			String name = entry.getKey();
 			SessionMappingConfigs sm = entry.getValue();
 			if (sm.getAllowedHosts().stream().anyMatch(a -> a.equals(socket.getInetAddress().getHostAddress()))) {
-				System.out.println("NAME: " + name);
 				return name;
 			}
 		}
@@ -399,7 +408,6 @@ public class PropertiesHelper {
     public String getMessage(MSG_TYPE msgType, String msgKey, Object... params) {     
 		Messages messages = getMessages();
 		String methodName = "get"+msgType.name().substring(0, 1).toUpperCase()+msgType.name().substring(1);
-		System.out.println(methodName);
 		Class[] classes = Arrays.stream(params).map(s -> s.getClass()).collect(Collectors.toList()).toArray(new Class[0]);
 		String message = null;
 		try {

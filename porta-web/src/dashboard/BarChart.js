@@ -55,3 +55,4 @@ class BarChart extends Component {
 }
 
 export default withStyles(chartThemes)(BarChart);
+

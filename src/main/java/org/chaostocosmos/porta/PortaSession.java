@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +24,7 @@ import org.chaostocosmos.porta.properties.SessionMappingConfigs;
  *
  * @author 9ins 2020. 11. 18.
  */
-public class PortaSession implements Runnable {
+public class PortaSession implements Runnable, PortaThreadPoolExceptionHandler {
 
 	boolean isDone = false;
 	String sessionName;
@@ -38,8 +39,18 @@ public class PortaSession implements Runnable {
 	boolean masterSessionFailed = false;
 	boolean slaveSessionFailed = false;
 	Map<Integer, Boolean> loadBalancedStatus;
-	long totalSuccessCount, totalFailCount;
-	long sessionStartMillis, sessionCurrentMillis;	
+	
+	long sessionStartMillis, 
+	sessionCurrentMillis;
+
+	long SESSION_SEND_SIZE_TOTAL, 
+	SESSION_RECEIVE_SIZE_TOTAL, 
+	SESSION_TOTAL_SUCCESS, 
+	SESSION_TOTAL_FAIL,
+	SESSION_SEND_SUCCESS_COUNT,
+	SESSION_RECEIVE_SUCCESS_COUNT,
+	SESSION_SEND_FAIL_COUNT,
+	SESSION_RECEIVE_FAIL_COUNT;	
 
 	/**
 	 * Constructor
@@ -58,8 +69,8 @@ public class PortaSession implements Runnable {
 		this.loadBalancedStatus = IntStream.range(0, this.sessionMapping.getRemoteHosts().size()).boxed()
 				.map(i -> new AbstractMap.SimpleEntry<Integer, Boolean>(i, true))
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		this.logger.setInfo(false);
+		this.threadPool.addExceptionHandler(this);						
+		//this.logger.setInfo(false);
 	}
 
 	/**
@@ -132,6 +143,11 @@ public class PortaSession implements Runnable {
 	}
 
 	@Override
+	public void handleException(Thread worker, Throwable t) {
+		t.printStackTrace();
+	}
+
+	@Override
 	public void run() {
 		try {
 			logger.info("[" + sessionName + "] [Session type: " + sessionMapping.getSessionModeEnum().name()+ "] Proxy server waiting [Port] : " + sessionMapping.getPort() + "   Target: "	+ sessionMapping.getRemoteHosts().toString());
@@ -151,9 +167,9 @@ public class PortaSession implements Runnable {
 				} else {
 					if (sessionMapping.getAllowedHosts().size() == 0 || sessionMapping.getAllowedHosts().stream().anyMatch(h -> h.equals(client.getLocalAddress().getHostAddress()))) {
 						logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Client channel connected. " + client.getRemoteSocketAddress().toString());
-						ChannelWorker task = new ChannelWorker(sessionName, client, sessionMapping);
-						logger.info("[" + sessionName + "] new client is connected. Clinet: " + client.getRemoteSocketAddress().toString() + " ------------------- connected.");
-						this.threadPool.execute(task);
+						ChannelWorker worker = new ChannelWorker(sessionName, client, sessionMapping);
+						this.threadPool.execute(worker);
+						logger.info("[" + sessionName + "] New Channel Worker started. Session: "+worker.getSessionName()+"   Worker: "+worker.getName()+"  "+worker.getId());
 					} else {
 						String err = "Not allowed host connected: " + client.getRemoteSocketAddress().toString();
 						logger.info(err);
@@ -195,6 +211,7 @@ public class PortaSession implements Runnable {
 	 */
 	public class ChannelWorker extends Thread {
 
+		ChannelTask channelTask;
 		String sessionName;
 		SessionMappingConfigs sessionMapping;
 		Socket client;
@@ -212,7 +229,7 @@ public class PortaSession implements Runnable {
 			this.sessionName = sessionName;
 			this.sessionMapping = sessionMapping;
 			this.client = client;
-			this.remotes = sessionMapping.getRemoteHosts();
+			this.remotes = sessionMapping.getRemoteHosts();			
 		}
 
 		/**
@@ -224,17 +241,22 @@ public class PortaSession implements Runnable {
 			return this.sessionName;
 		}
 
+		/**
+		 * Close channel task
+		 * @throws IOException
+		 */
 		public void close() throws IOException {
+			this.interrupt();
+			this.channelTask.close();
 		}
 
 		@Override
 		public void run() {
 			long roundRobinIndex = 0;
-			int failCount = 0;
 			try {
 				switch (sessionMapping.getSessionModeEnum()) {
-
-				case STAND_ALONE:  {
+				case STAND_ALONE:  
+				{
 					if (remotes.size() != 1) {
 						throw new PortaException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName	+ "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()	+ "] Stand Alone session must have just one remote channel. Check the seesion configuration in config yaml!!!");
 					}
@@ -243,11 +265,10 @@ public class PortaSession implements Runnable {
 					for (int i = 0; i < retry; i++) {
 						try {
 							channel.connect();
-							ChannelTask channelTask = new ChannelTask(sessionName, channel);
-							channelTask.interact();
+							channelTask = new ChannelTask(sessionName, channel);
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Remote channel connected. " + this.sessionMapping.getRemoteHosts().toString());
 							standAloneFailed = false;
-							totalSuccessCount++;
+							SESSION_TOTAL_SUCCESS++;
 							break;
 						} catch (Exception e) {
 							standAloneFailed = true;
@@ -256,10 +277,10 @@ public class PortaSession implements Runnable {
 						Thread.sleep(Constants.RETRY_INTERVAL);
 					}
 					if (standAloneFailed) {
+						SESSION_TOTAL_FAIL++;
 						if (channel != null) {
 							channel.close();
 						}
-						totalFailCount++;
 					}
 				}
 				break;
@@ -268,29 +289,27 @@ public class PortaSession implements Runnable {
 					masterSessionFailed = false;
 					slaveSessionFailed = false;
 
-				case HIGH_AVAILABLE_FAIL_OVER: {
+				case HIGH_AVAILABLE_FAIL_OVER: 
+				{
 					if (remotes.size() != 2) {
 						throw new PortaException(this.sessionMapping.getSessionModeEnum().name(), "[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()	+ "] HA Fail Over session must have just two remote channel. Check the seesion configuration in config yaml!!!");
 					}
 					if (masterSessionFailed && slaveSessionFailed) {
-						failCount++;
-						logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Master/Slave channel disable now. Please reboot or rivival using Admin CLI(Currently not support).");
+						logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Master/Slave channel disable now. Please reboot or rivival using Management console.");
+						return;
 					}
 					if (!masterSessionFailed) {
 						PortaSocket master = new PortaSocket(this.client, sessionMapping, 0);
 						try {
 							master.connect();
-							ChannelTask channelTask = new ChannelTask(sessionName, master);
-							channelTask.interact();
+							channelTask = new ChannelTask(sessionName, master);
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Master channel connected. " + master.getRemoteAddress().toString());
 							masterSessionFailed = false;
-							totalSuccessCount++;
 						} catch (Exception e) {
+							masterSessionFailed = true;
 							if (master != null) {
 								master.close();
 							}
-							masterSessionFailed = true;
-							failCount++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Master channel failed. Slave channel be used at next connection.");
 							logger.throwable(e);
 						}
@@ -299,28 +318,28 @@ public class PortaSession implements Runnable {
 						PortaSocket slave = new PortaSocket(this.client, sessionMapping, 1);
 						try {
 							slave.connect();
-							ChannelTask channelTask = new ChannelTask(sessionName, slave);
-							channelTask.interact();
+							channelTask = new ChannelTask(sessionName, slave);
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Slave channel connected. " + slave.getRemoteAddress().toString());
 							slaveSessionFailed = false;
-							totalSuccessCount++;
 						} catch (Exception e) {
 							if (slave != null) {
 								slave.close();
 							}
 							slaveSessionFailed = true;
-							failCount++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Slave channel failed. Master/Slave failed.");
 							logger.throwable(e);
 						}
 					}
 					if (masterSessionFailed && slaveSessionFailed) {
-						totalFailCount++;
+						SESSION_TOTAL_FAIL++;
+					} else {
+						SESSION_TOTAL_SUCCESS++;
 					}
 				}
 				break;
 
-				case LOAD_BALANCE_ROUND_ROBIN: {
+				case LOAD_BALANCE_ROUND_ROBIN: 
+				{
 					while (loadBalancedStatus.values().stream().anyMatch(b -> b == true)) {
 						int channelIndex = (int) (roundRobinIndex % (long) sessionMapping.getRemoteHosts().size());
 						if (!loadBalancedStatus.get(channelIndex)) {
@@ -330,13 +349,13 @@ public class PortaSession implements Runnable {
 						PortaSocket channel = new PortaSocket(this.client, sessionMapping, channelIndex);
 						try {
 							channel.connect();
-							ChannelTask channelTask = new ChannelTask(sessionName, channel);
-							channelTask.interact();
-							totalSuccessCount++;
+							channelTask = new ChannelTask(sessionName, channel);
+							SESSION_TOTAL_SUCCESS++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Load-Balanced Round-Robin channel connected. Channel index: " + channelIndex + "  Host: " + channel.getRemoteAddress().toString());
 							break;
 						} catch (Exception e) {
 							logger.info("[" + sessionName + "][SESSION MODE: " + sessionMapping.getSessionModeEnum() + "] Load-Balance Round-Robin Channel failed. Round-Robin channel index: "	+ channelIndex + "  Host: " + channel.getRemoteAddress().toString());
+							SESSION_TOTAL_FAIL++;
 							if (channel != null) {
 								channel.close();
 							}
@@ -348,7 +367,6 @@ public class PortaSession implements Runnable {
 								if (channel != null) {
 									channel.close();
 								}
-								totalFailCount++;
 								break;
 							}
 						}
@@ -356,7 +374,8 @@ public class PortaSession implements Runnable {
 				}
 				break;
 
-				case LOAD_BALANCE_SEPARATE_RATIO: {
+				case LOAD_BALANCE_SEPARATE_RATIO: 
+				{
 					List<Float> ratioList = sessionMapping.getLoadBalanceRatioList();
 					while (loadBalancedStatus.values().stream().anyMatch(b -> b == true)) {
 						int randomIndex = getRandomRatioIndex(ratioList);
@@ -367,26 +386,24 @@ public class PortaSession implements Runnable {
 						PortaSocket channel = new PortaSocket(this.client, sessionMapping, randomIndex);
 						try {
 							channel.connect();
-							ChannelTask channelTask = new ChannelTask(sessionName, channel);
-							channelTask.interact();
-							totalSuccessCount++;
+							channelTask = new ChannelTask(sessionName, channel);
+							SESSION_TOTAL_SUCCESS++;
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Load-Balance Separate Ratio Distribution Channel connected. Channel index: " + randomIndex + "  Host: " + sessionMapping.getRemoteHosts().get(randomIndex).toString());
 							break;
 						} catch (Exception e) {
 							logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Load-Balance Separate Ratio Distribution Channel failed. Channel index: " + randomIndex + "  Host: "	+ sessionMapping.getRemoteHosts().get(randomIndex).toString());
+							SESSION_TOTAL_FAIL++;
 							if (channel != null) {
 								channel.close();
 							}
 							loadBalancedStatus.put(randomIndex, false);
 							ratioList.set(randomIndex, 0f);
-							failCount++;
 						} finally {
 							if (!loadBalancedStatus.values().stream().anyMatch(b -> b == true)) {
 								logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum()+ "] All of Load-Balance Separate Ratio Distribution remote channel failed. Please check remote host healthy. eg. Network, Server status...");
 								if (channel != null) {
 									channel.close();
 								}
-								totalFailCount++;
 								break;
 							}
 						}
@@ -397,10 +414,20 @@ public class PortaSession implements Runnable {
 				default:
 					logger.error("Wrong Session Mode is input: " + this.sessionMapping.getSessionModeEnum().name());
 				}
-
-				logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Statistics:  Success = " + totalSuccessCount + "  Fail = " + totalFailCount + "");
+				logger.info("[" + sessionName + "][SESSION MODE: " + this.sessionMapping.getSessionModeEnum() + "] Statistics:  Success = " + SESSION_TOTAL_SUCCESS + "  Fail = " + SESSION_TOTAL_FAIL+ "");
 			} catch (Exception e) {
-				logger.throwable(e);
+				throw new RuntimeException(e);
+			} finally {
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_TOTAL_SUCCESS, SESSION_TOTAL_SUCCESS);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_TOTAL_FAIL, SESSION_TOTAL_FAIL);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_SEND_SUCCESS_COUNT, SESSION_SEND_SUCCESS_COUNT);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_SEND_FAIL_COUNT, SESSION_SEND_FAIL_COUNT);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_RECEIVE_SUCCESS_COUNT, SESSION_RECEIVE_SUCCESS_COUNT);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_RECEIVE_FAIL_COUNT, SESSION_RECEIVE_FAIL_COUNT);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_SEND_SIZE_TOTAL, SESSION_SEND_SIZE_TOTAL);
+				this.sessionMapping.putStatistics(RESOURCE.SESSION_RECEIVE_SIZE_TOTAL, SESSION_RECEIVE_SIZE_TOTAL);
+				//System.out.println(this.sessionMapping.getStatistics().toString());
+				System.out.println(SESSION_SEND_SIZE_TOTAL+"  "+SESSION_RECEIVE_SIZE_TOTAL);
 			}
 		}
 	}	
@@ -414,11 +441,10 @@ public class PortaSession implements Runnable {
 
 		boolean sendDone, receiveDone;
 		String channelName;
-		final Socket client, remote;
+		Socket client, remote;
+		int bufferSize;
 		long startMillis;
-		long totalSendBytes;
-		long totalReceiveBytes;
-		CountDownLatch latch = new CountDownLatch(1);
+		Thread sendThr;
 
 		/**
 		 * Constructor
@@ -426,78 +452,76 @@ public class PortaSession implements Runnable {
 		 * @param channelName
 		 * @param channel
 		 * @throws IOException
+		 * @throws InterruptedException
 		 */
-		public ChannelTask(String channelName, PortaSocket channel) throws IOException {
+		public ChannelTask(String channelName, PortaSocket channel) throws IOException, InterruptedException {
 			this.channelName = channelName;
 			this.client = channel.getClientSocket();
 			this.remote = channel.getRemoteSocket();
 			this.startMillis = System.currentTimeMillis();
+			this.bufferSize = sessionMapping.getBufferSize() == 0 ? 1024 * 8 : sessionMapping.getBufferSize();
+			CountDownLatch latch = new CountDownLatch(1);		
+			this.sendThr = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						logger.info("[" + channelName + "] Send channel opening to: "+remote.getInetAddress().toString());
+						SESSION_SEND_SIZE_TOTAL += new InterBroker().process(client.getInputStream(), remote.getOutputStream());
+						if(client.isClosed() || remote.isClosed()) {
+							return;							
+						}
+						SESSION_SEND_SUCCESS_COUNT++;
+						sendDone = true;
+					} catch(IOException e) {
+						SESSION_TOTAL_FAIL++;
+						SESSION_SEND_FAIL_COUNT++;
+						throw new RuntimeException(e);
+					} finally {
+						latch.countDown();
+					} 
+				}
+			});
+			this.sendThr.start();
+			logger.info("[" + channelName + "] Receive channel opening from: "+remote.getInetAddress().toString());
+			SESSION_RECEIVE_SIZE_TOTAL += new InterBroker().process(remote.getInputStream(), client.getOutputStream());
+			if(client.isClosed() || remote.isClosed()) {
+				return;
+			}
+			SESSION_RECEIVE_SUCCESS_COUNT++;
+			receiveDone = true;
+			latch.await();
+			close();
 		}
 
-		/**
-		 * Interact
-		 */
-		public void interact() {
-			logger.info("[" + this.channelName + "] Channel Opening......");
-			final int bufferSize = sessionMapping.getBufferSize() == 0 ? 1024 * 8 : sessionMapping.getBufferSize();
-			try {
-				Thread sendThr = new Thread(new Runnable() {
-					@Override
-					public void run() {
-						InputStream is = null;
-						OutputStream os = null;
-						try {
-							if(client.isClosed() || remote.isClosed()) {
-								return;
-							}
-							is = client.getInputStream();
-							os = remote.getOutputStream();
-							int read;
-							byte[] buffer = new byte[bufferSize];
-							while (( read = is.read(buffer) ) > 0) {
-								os.write(buffer, 0, read);
-								os.flush();
-								totalSendBytes += read;
-							}
-							is.close();
-							os.close();
-							sendDone = true;
-						} catch(IOException e) {
-							throw new RuntimeException(e);
-						} finally {
-							latch.countDown();
-						} 
-					}
-				});
-				sendThr.start();
-				if(client.isClosed() || remote.isClosed()) {
-					return;
-				}
-				InputStream is = remote.getInputStream();
-				OutputStream os = client.getOutputStream();
+		private class InterBroker {			
+
+			long totalBytes = 0;
+
+			public long process (InputStream is, OutputStream os) throws IOException {				
 				int read;
 				byte[] buffer = new byte[bufferSize];
-				while (( read = is.read(buffer) ) > 0) {
-					os.write(buffer, 0, read);
-					os.flush();
-					totalSendBytes += read;
-				}
-				is.close();
-				os.close();
-				receiveDone = true;
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			} finally {
 				try {
-					latch.await();
-					close();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+					while (( read = is.read(buffer) ) > 0) {
+						os.write(buffer, 0, read);
+						os.flush();
+						totalBytes += read;
+					}
+					is.close();
+					os.close();
+				} catch(Exception e) {
+					if( e instanceof SocketException && e.getMessage().contains("Socket closed")) {	} 
+					else {
+						throw e;
+					}
 				}
+				return totalBytes;
 			}
 		}
 
 		public void close() throws IOException {
+			if(this.sendThr != null) {
+				this.sendThr.interrupt();
+			}
 			if(this.remote != null) {
 				this.remote.close();
 			}

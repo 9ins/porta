@@ -10,7 +10,7 @@ function App() {
   return (
   <Router>
     <Switch>
-      <Route path="/" component={TabFrame} />
+      <Route path="/" component={TabFrame} /> 
     </Switch>
   </Router>
   );

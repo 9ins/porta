@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.io.InputStream;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
 import org.chaostocosmos.porta.Context;
@@ -108,6 +109,7 @@ public abstract class AbstractHttpServlet extends HttpServlet {
         RESPONSE_TYPE type = (RESPONSE_TYPE)resMap.remove(RESPONSE.RESPONSE_TYPE);
         //TEXT, JSON, HTML, XML, YAML, FILE
         Object responseObject = resMap.remove(RESPONSE.RESPONSE_CONTENT);
+   
 
         if(type == RESPONSE_TYPE.TEXT) {
 

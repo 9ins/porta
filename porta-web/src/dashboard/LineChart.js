@@ -12,8 +12,8 @@ class LineChart extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            xDomain: [0, 100],
-            yDomain: [0, 100],
+            xDomain: [0, 100], 
+            yDomain: [0, 100], 
             data: props.elements.map((e, index) => [{ x: 0, y: 0 }])
         }        
         this.fetchRequest = new FetchRequest().fetchGetLinechart;

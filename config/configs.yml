@@ -1,86 +1,90 @@
 appConfigs: !!org.chaostocosmos.porta.properties.AppConfigs
-  name: Porta
-  statisticsProbeMillis: 1000
-  version: 1.0.0
+    name: Porta
+    statisticsProbeMillis: 1000
+    version: 1.0.0
 managementConfigs: !!org.chaostocosmos.porta.properties.ManagementConfigs
-  managementActivation: true
-  managementAddress: localhost
-  managementPort: 3232
-  managementResourceBase: ./porta-web
+    managementActivation: true
+    managementAddress: 127.0.0.1
+    managementPort: 3232
+    managementResourceBase: ./porta-web
 threadPoolConfigs: !!org.chaostocosmos.porta.properties.ThreadPoolConfigs
-<<<<<<< HEAD
-  threadPoolCoreSize: 30
-  threadPoolMaxSize: 50
-  threadPoolIdleSecond: 10
-  threadPoolLimitSize: 1000
-=======
-  threadPoolCoreSize: 167
-  threadPoolIdleSecond: 10
-  threadPoolLimitSize: 1000
-  threadPoolMaxSize: 804
->>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
-  threadPoolQueueSize: 30
+    threadPoolCoreSize: 30
+    threadPoolIdleSecond: 10
+    threadPoolLimitSize: 1000
+    threadPoolMaxSize: 246
+    threadPoolQueueSize: 30
 sessionMappingConfigs:
-  mysql: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
-    allowedHosts:
-    - 127.0.0.1
-    bindAddress: localhost
-    bufferSize: 0
-    connectionTimeout: 5
-    failedCircularRetry: 3
-    forbiddenHosts: [
-      ]
-    keepAlive: false
-    loadBalanceRatio: null
-    port: 9336
-    remoteHosts:
-    - 192.168.1.157:9336
-    - 192.168.1.157:9336
-    - 192.168.1.157:9336
-    sessionMode: LOAD_BALANCE_ROUND_ROBIN
-    soTimeout: 0
-    retry: 3
-    retryInterval: 500
-    tcpNoDelay: false
-  kafka: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
-    allowedHosts:
-    - 127.0.0.1
-    bindAddress: localhost
-    bufferSize: 0
-    connectionTimeout: 0
-    failedCircularRetry: 3
-    forbiddenHosts: [
-      ]
-    keepAlive: false
-    loadBalanceRatio: null
-    port: 8092
-    remoteHosts:
-    - 192.168.1.152:8092
-    sessionMode: STAND_ALONE
-    soTimeout: 0
-    retry: 3
-    retryInterval: 500
-    tcpNoDelay: false
-  oracle: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
-    allowedHosts:
-    - 127.0.0.1
-    bindAddress: localhost
-    bufferSize: 0
-    connectionTimeout: 5
-    failedCircularRetry: 6
-    forbiddenHosts: [
-      ]
-    keepAlive: true
-    loadBalanceRatio: null
-    port: 1521
-    remoteHosts:
-    - 192.168.1.157:1521
-    sessionMode: STAND_ALONE
-    soTimeout: 6000
-<<<<<<< HEAD
-    retry: 3
-    retryInterval: 500
-=======
-    standAloneRetry: 3
->>>>>>> 2ab121c65447e0d2700614c8548754bc80fcda68
-    tcpNoDelay: true
+    mysql: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
+        allowedHosts: 
+        - 127.0.0.1
+        bindAddress: 127.0.0.1
+        bufferSize: 0
+        connectionTimeout: 5
+        forbiddenHosts: [
+            ]
+        keepAlive: false
+        loadBalanceRatio: null
+        port: 9336
+        remoteHosts: 
+        - 192.168.1.157:9336
+        - 192.168.1.157:9336
+        - 192.168.1.157:9336
+        retry: 3
+        retryInterval: 500
+        sessionMode: LOAD_BALANCE_ROUND_ROBIN
+        soTimeout: 0
+        tcpNoDelay: false
+    kafka: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
+        allowedHosts:
+        - 127.0.0.1
+        bindAddress: 127.0.0.1
+        bufferSize: 0
+        connectionTimeout: 0
+        forbiddenHosts: [
+            ]
+        keepAlive: false
+        loadBalanceRatio: null
+        port: 8092
+        remoteHosts: 
+        - 127.0.0.1:9092
+        retry: 3
+        retryInterval: 500
+        sessionMode: STAND_ALONE
+        soTimeout: 0
+        tcpNoDelay: false
+    oracle: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
+        allowedHosts: 
+        - 127.0.0.1
+        bindAddress: 127.0.0.1
+        bufferSize: 20480
+        connectionTimeout: 5
+        forbiddenHosts: [
+            ]
+        keepAlive: true
+        loadBalanceRatio: null
+        port: 1521
+        remoteHosts: 
+        - 192.168.1.157:1521
+        retry: 3
+        retryInterval: 500
+        sessionMode: STAND_ALONE
+        soTimeout: 6000
+        tcpNoDelay: true
+    rabbitmq: !!org.chaostocosmos.porta.properties.SessionMappingConfigs
+        allowedHosts:
+        - 127.0.0.1
+        bindAddress: 127.0.0.1
+        bufferSize: 20480
+        connectionTimeout: 5
+        forbiddenHosts: [
+            ]
+        keepAlive: true
+        loadBalanceRatio: null
+        port: 25672
+        remoteHosts: 
+        - 127.0.0.1:5672
+        retry: 3
+        retryInterval: 500
+        sessionMode: STAND_ALONE
+        soTimeout: 6000
+        tcpNoDelay: true

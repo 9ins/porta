@@ -22,7 +22,7 @@ import org.chaostocosmos.porta.properties.PropertiesHelper;
 public class AdminServerHandler implements Runnable {
 	
 	boolean isDone = false;
-	PortaMain proxy;
+	PortaApp proxy;
 	PropertiesHelper configHandler;
 	ServerSocket adminServer; 
 	Socket adminClient;
@@ -35,7 +35,7 @@ public class AdminServerHandler implements Runnable {
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
-	public AdminServerHandler(PortaMain proxy) throws IOException, ClassNotFoundException {
+	public AdminServerHandler(PortaApp proxy) throws IOException, ClassNotFoundException {
 		this.proxy = proxy;
 		this.configHandler = PropertiesHelper.getInstance();
 	}

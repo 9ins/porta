@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.chaostocosmos.porta.PortaException;
+import org.chaostocosmos.porta.RESOURCE;
 import org.chaostocosmos.porta.SESSION_MODE;
 
 /**
@@ -31,12 +32,25 @@ public class SessionMappingConfigs implements Serializable {
 	private String loadBalanceRatio;
 	private int retry;
 	private long retryInterval;
-	private int failedCircularRetry;
 	private int bufferSize;
 	private int connectionTimeout;
 	private int soTimeout;
 
-	SessionMappingConfigs() {}
+	//Represent statistic information
+	Map<Object, Object> statisticsMap = new HashMap<>();
+
+	SessionMappingConfigs() {
+		statisticsMap.put(RESOURCE.SESSION_SEND_SIZE, 0);
+		statisticsMap.put(RESOURCE.SESSION_RECEIVE_SIZE, 0);
+		statisticsMap.put(RESOURCE.SESSION_SEND_SIZE_TOTAL, 0);
+		statisticsMap.put(RESOURCE.SESSION_RECEIVE_SIZE_TOTAL, 0);
+		statisticsMap.put(RESOURCE.SESSION_TOTAL_SUCCESS, 0);
+		statisticsMap.put(RESOURCE.SESSION_SEND_SUCCESS_COUNT, 0);
+		statisticsMap.put(RESOURCE.SESSION_RECEIVE_SUCCESS_COUNT, 0);
+		statisticsMap.put(RESOURCE.SESSION_TOTAL_FAIL, 0);
+		statisticsMap.put(RESOURCE.SESSION_SEND_FAIL_COUNT, 0);
+		statisticsMap.put(RESOURCE.SESSION_RECEIVE_FAIL_COUNT, 0);
+	}
 
 	public Map<Object, Object> getSessionMappingMap() throws IllegalArgumentException, IllegalAccessException {
 		Map<Object, Object> map = new HashMap<>();
@@ -45,6 +59,15 @@ public class SessionMappingConfigs implements Serializable {
 			map.put(f.getName(), f.get(this));
 		}
 		return map;
+	}
+
+	public void setSessionMappingMap(Map<Object, Object> map) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+		for(Map.Entry<Object, Object> entry : map.entrySet()) {
+			String key = entry.getKey()+"";
+			Field field = this.getClass().getDeclaredField(key);
+			field.setAccessible(true);
+			field.set(this.getClass(), entry.getValue());		
+		}
 	}
 
 	public List<String> getAllowedHosts() {
@@ -139,20 +162,13 @@ public class SessionMappingConfigs implements Serializable {
 		return this.loadBalanceRatio;
 	}
 
-	public int getFailedCircularRetry() {
-		return this.failedCircularRetry;
-	}
-
-	public void setFailedCircularRetry(int failedCircularRetry) {
-		this.failedCircularRetry = failedCircularRetry;
-	}
-
 	public void setRemoteHosts(List<String> remoteHosts) {
 		this.remoteHosts = remoteHosts;
 	}
 
-	public void setSessionMode(String sessionMode) {
+	public void setSessionMode(String sessionMode) {		
 		this.sessionMode = sessionMode;
+		this.statisticsMap.put(RESOURCE.SESSION_MODE, SESSION_MODE.valueOf(this.sessionMode));
 	}
 
 	public void setLoadBalanceRatio(String loadBalanceRatio) {
@@ -251,6 +267,14 @@ public class SessionMappingConfigs implements Serializable {
 		return false;
 	}
 
+	public Map<Object, Object> getStatistics() {
+		return this.statisticsMap;
+	}	
+
+	public void putStatistics(RESOURCE res, Object value) {
+		this.statisticsMap.put(res, value);
+	}
+
 	@Override
 	public String toString() {
 		return "{" +
@@ -265,10 +289,10 @@ public class SessionMappingConfigs implements Serializable {
 			", loadBalanceRatio='" + loadBalanceRatio + "'" +
 			", retry='" + retry + "'" +
 			", retryInterval='" + retryInterval + "'" +
-			", failedCircularRetry='" + failedCircularRetry + "'" +
 			", bufferSize='" + bufferSize + "'" +
 			", connectionTimeout='" + connectionTimeout + "'" +
 			", soTimeout='" + soTimeout + "'" +
+			", statisticsMap='" + statisticsMap.toString() + "'" +
 			"}";
 	}
 }

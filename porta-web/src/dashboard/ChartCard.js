@@ -11,8 +11,6 @@ class ChartCard extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            direction: props.direction,
-            justify: props.justify,
             medias: props.medias,
             content: props.content,
         }        

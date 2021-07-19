@@ -65,6 +65,12 @@ class FetchRequest extends Component {
         })
     }
 
+    fetchPostRequestAsync = async (path, body) => {
+        const response = await fetch(path, requestPostOptions(body));
+        const json = await response.json();
+        return json;
+    }
+
     fetchPostRequest = (path, body) => {
         return fetch(path, requestPostOptions(body))
         .then(response => response.json())

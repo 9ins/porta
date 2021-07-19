@@ -6,8 +6,9 @@ import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import { withStyles } from '@material-ui/core/styles';
 import { ThemeProvider } from '@material-ui/core/styles';
-import Dashboard from '../dashboard/Dashboard';
 import {theme, frameThemes} from './PortaThemes';
+import Dashboard from '../dashboard/Dashboard';
+import Sessions from '../sessions/Sessions';
 
 
 import Logo from '../img/porta2.svg';
@@ -32,7 +33,7 @@ class TabFrame extends Component {
     const { classes } = this.props;
     const bull = <span className={classes.bullet}>•</span>;
     return (
-      <div className={classes.tabpanel}>
+      <div className={classes.root}>
         <div className={classes.title}>
           <ThemeProvider theme={theme}>
             <Typography variant="h6" component="h5">
@@ -54,12 +55,12 @@ class TabFrame extends Component {
             </Tabs>
           </AppBar>
 
-          <TabPanel className={classes.tabpanel} value={this.state.value} index={0}>
+          <TabPanel value={this.state.value} index={0}>
             <Dashboard></Dashboard>
           </TabPanel>              
           
           <TabPanel value={this.state.value} index={1}>
-            Sessions
+            <Sessions></Sessions>
           </TabPanel>
 
           <TabPanel value={this.state.value} index={2}>
@@ -80,9 +81,15 @@ class TabFrame extends Component {
 }
 
 class TabPanel extends Component {
+
+  constructor(props) {
+    super(props);
+  }
+
   render() {
+    const { classes } = this.props;
     return (
-      <div hidden={this.props.value !== this.props.index}>
+      <div hidden={this.props.value !== this.props.index} className={classes}>
         <Box p={2}>{this.props.children}</Box>
       </div>
     );

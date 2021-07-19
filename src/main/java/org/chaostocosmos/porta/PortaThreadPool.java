@@ -1,5 +1,6 @@
 package org.chaostocosmos.porta;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -12,7 +13,7 @@ import org.chaostocosmos.porta.PortaSession.ChannelWorker;
 /**
  * PortaThreadPool class
  */
-public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecutionHandler {	
+public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecutionHandler, UncaughtExceptionHandler {	
 
     Logger logger = Logger.getInstance();
 	List<PortaThreadPoolExceptionHandler> exceptionHandlers = new ArrayList<>();
@@ -27,6 +28,7 @@ public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecu
 	 */
     public PortaThreadPool(int coreSize, int maxSize, int idleSecond, int queueSize) {
         super(coreSize, maxSize, idleSecond, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(queueSize));
+		Thread.setDefaultUncaughtExceptionHandler(this);
     } 
 
 	@Override
@@ -36,17 +38,20 @@ public class PortaThreadPool extends ThreadPoolExecutor implements RejectedExecu
 
 	@Override
 	protected void afterExecute(Runnable r, Throwable t) {
-		if(t == null) {
-			ChannelWorker worker = (ChannelWorker)r;		
-			for(PortaThreadPoolResultHandler resultHandler : this.resultHandlers) {
-				resultHandler.handleResult(worker);
-			}
-		} else {
-			for(PortaThreadPoolExceptionHandler exceptionHandler : this.exceptionHandlers) {				
-				exceptionHandler.handleException(t);
-			}	
+		ChannelWorker worker = (ChannelWorker)r;		
+		for(PortaThreadPoolResultHandler resultHandler : this.resultHandlers) {	
+			resultHandler.handleResult(worker);
 		}
 	}
+
+	@Override
+	public void uncaughtException(Thread t, Throwable e) {
+		if(t != null) {
+			for(PortaThreadPoolExceptionHandler exceptionHandler : this.exceptionHandlers) {				
+				exceptionHandler.handleException(t, e);
+			}		
+		}
+	}	
 
 	/**
 	 * Add result handler

@@ -2,6 +2,7 @@ package org.chaostocosmos.porta.properties;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Configs implements Serializable {
 
@@ -36,7 +37,7 @@ public class Configs implements Serializable {
 		this.threadPoolConfigs = threadPoolConfigs;
 	}
 
-	public Map<String,SessionMappingConfigs> getSessionMapping() {
+	public Map<String, SessionMappingConfigs> getSessionMapping() {		
 		return this.sessionMappingConfigs;
 	}
 

@@ -1,14 +1,14 @@
 package org.chaostocosmos.porta;
 
-
 /**
  * Proxy Thread Pool Exception Handler
  */
 public interface PortaThreadPoolExceptionHandler {
 
     /**
-     * Handling exception
+     * Handle exception
+     * @param worker
      * @param t
      */
-    public void handleException(Throwable t);
+    public void handleException(Thread worker, Throwable t);
 }

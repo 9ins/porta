@@ -6,6 +6,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/react-fontawesome';
 import { BrowserRouter } from "react-router-dom";
 import App from './app/App';
+import Dashboard from './dashboard/Dashboard';
 
 ReactDOM.render(
   <React.StrictMode>

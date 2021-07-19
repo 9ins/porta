@@ -10,7 +10,7 @@ import java.util.EnumSet;
 
 import org.chaostocosmos.porta.BasicSecurityManager;
 import org.chaostocosmos.porta.Context;
-import org.chaostocosmos.porta.PortaMain;
+import org.chaostocosmos.porta.PortaApp;
 import org.chaostocosmos.porta.ResourceUtils;
 import org.chaostocosmos.porta.properties.PropertiesHelper;
 import org.chaostocosmos.porta.web.filters.LoginFilter;
