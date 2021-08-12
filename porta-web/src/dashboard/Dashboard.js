@@ -1,96 +1,74 @@
 import React, { Component } from 'react';
+
+import { withStyles, makeStyles } from '@material-ui/core/styles';
+import { MenuItem, InputAdornment, TextField, TableRow, TableCell, TableHead, TableContainer, TableBody, Table, Paper, Snackbar, Button, Box, Grid, Typography} from '@material-ui/core';
+import CheckOutlinedIcon from '@material-ui/icons/CheckOutlined';
+
 import ChartCard from './ChartCard';
 import LineChart from './LineChart';
 import BarChart from './BarChart';
 import randomColor from 'randomcolor';
 import InformCard from './InformCard';
-import Box from '@material-ui/core/Box';
-import Grid from '@material-ui/core/Grid';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
-import DoneOutlinedIcon from '@material-ui/icons/DoneOutlined';
-import Typography from '@material-ui/core/Typography';
-import { Snackbar, Button } from '@material-ui/core';
-import { chartCardThemes, dashboardThemes, StyledAutocomplete, StyledTextField, StyledTableContainer, StyledTableCell, StyledTableRow, StyledTypography} from '../app/PortaThemes.js';
-import { MessageAlert, PrettoSlider, ApplyButton, WhiteTextTypography, SessionNameTypography } from '../widget/Widgets';
 import FetchRequest from '../app/FetchRequest';
-import Paper from '@material-ui/core/Paper';
-import { AutoSizer } from 'react-virtualized';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import TextField from '@material-ui/core/TextField';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import AccountCircle from '@material-ui/icons/AccountCircle';
-import Autocomplete from '@material-ui/lab/Autocomplete';
 import '../css/responsive_tabs.css';
+import { chartCardThemes, dashboardThemes, StyledSelect, StyledTextField, StyledTableContainer, StyledTableCell, StyledTableRow, StyledTypography} from '../app/PortaThemes.js';
+import { MessageAlert, PrettoSlider, ApplyButton, WhiteTextTypography, SessionNameTypography } from '../widget/Widgets';
+
 
 class Dashboard extends Component {
 
   constructor(props) {
-    super(props);
-    this.state = {
-      memory: {
-        name: 'memory',
-        title: 'Memory status',
-        path: '/resources?type=MEMORY&unit=GB',
-        elements: ['systemUsed', 'heapFree', 'memoryUsed'],
-        labels: ['system', 'heapFree', 'memory'],
-        dimension: [400, 250],
-        spacing: 5,
-        direction: 'column',
-        unit: 'GB',
-        content: (
+      super(props);
+      this.state = {
+        memory_name: 'memory',
+        memory_title: 'Memory status',
+        memory_path: '/resources?type=MEMORY&unit=GB',
+        memory_elements: ['systemUsed', 'heapFree', 'memoryUsed'],
+        memory_labels: ['system', 'heapFree', 'memory'],
+        memory_dimension: [400, 250],
+        memory_spacing: 5,
+        memory_direction: 'column',
+        memory_unit: 'GB',
+        memory_content: (
           <div>
             <WhiteTextTypography variant='body2'>system: total memory usage of system.</WhiteTextTypography>
             <WhiteTextTypography variant='body2'>heapFree: Porta heap free memory(Max - used).</WhiteTextTypography>
             <WhiteTextTypography variant='body2'>memory: Porta used memory currently.</WhiteTextTypography>
           </div>
-        )
-      },
-      cpu: {
-        name: 'cpu',
-        title: 'CPU status',
-        path: '/resources?type=CPU&unit=PCT',
-        elements: ['cpuLoad', 'systemCpuLoad'],
-        labels: ['cpu', 'systemCpu'],
-        dimension: [400, 250],
-        spacing: 5,
-        direction: 'column',
-        unit: '%',
-      },
-      threadPool: {
-        name: 'threadPool',
-        title: 'Thread pool status',
-        path: '/resources?type=THREAD&unit=CNT',
-        elements: ['activeCount', 'corePoolSize', 'maxinumPoolSize', 'queueSize'],
-        labels: ['active', 'core', 'max', 'queue'],
-        dimension: [250, 275],
-        yDomain: 220,
-        xDistance: 0,
-        yDistance: 0,
-        path1: '/resources?type=THREAD_POOL',
-        corePoolSize: 0,
-        maximumPoolSize: 0,
-        limitPoolSize: 0,
-        queueSize: 0,
-      },
-      sessionInfo: {
-        sessionNames: [],
-        sessionSimpleJson: '',
-        sessionStatistics: '',
-        sessionSimple: {
-          name: 'sessionSimple',
-          title: 'Session Information',
-          path: '/session?type=SESSION_SIMPLE',
-        },
-      },
-      alert: {
-        open: false,
-        message: '',
-        status: '',
+        ),
+        cpu_name: 'cpu',
+        cpu_title: 'CPU status',
+        cpu_path: '/resources?type=CPU&unit=PCT',
+        cpu_elements: ['cpuLoad', 'systemCpuLoad'],
+        cpu_labels: ['cpu', 'systemCpu'],
+        cpu_dimension: [400, 250],
+        cpu_spacing: 5,
+        cpu_direction: 'column',
+        cpu_unit: '%',
+        threadpool_name: 'threadpool',
+        threadpool_title: 'Thread pool status',
+        threadpool_path: '/resources?type=THREAD&unit=CNT',
+        threadpool_elements: ['activeCount', 'corePoolSize', 'maxinumPoolSize', 'queueSize'],
+        threadpool_labels: ['active', 'core', 'max', 'queue'],
+        threadpool_dimension: [250, 275],
+        threadpool_yDomain: 220,
+        threadpool_xDistance: 0,
+        threadpool_yDistance: 0,
+        threadpool_path1: '/resources?type=THREAD_POOL',
+        threadpool_corePoolSize: 0,
+        threadpool_maximumPoolSize: 0,
+        threadpool_limitPoolSize: 0,
+        threadpool_queueSize: 0,
+        sessioninfo_sessionNames: [],
+        sessioninfo_sessionSimpleJson: '',
+        sessioninfo_sessionStatistics: '',
+        sessioninfo_sessionSimple: {
+            name: 'sessionSimple',
+            title: 'Session Information',
+            path: '/session?type=SESSION_SIMPLE',
+        alert_open: false,
+        alert_message: '',
+        alert_status: '',
       },
       dashboardRefreshSec: 2,  
       sessionColumn: ['SESSION NAME', 
@@ -99,257 +77,250 @@ class Dashboard extends Component {
                       'SESSION TOTAL FAIL', 
                       'SESSION SEND SIZE', 
                       'SESSION RECEIVE SIZE',],
-    }
-    this.request = new FetchRequest();
+      }
+      this.request = new FetchRequest();
   }
 
   componentDidMount() {
-    this.request.fetchGetResource(this.state.threadPool.path)
+      this.request.fetchGetResource(this.state.threadpool_path)
       .then(json => {
-        this.setState({
-          threadpool : {
-            corePoolSize: json['corePoolSize'],
-            maximumPoolSize: json['maxinumPoolSize'],
-            limitPoolSize: json['limitPoolSize'],
-            queueSize: json['queueSize'],
-          }
-        });
+          this.setState({
+              threadpool_corePoolSize: json['corePoolSize'],
+              threadpool_maximumPoolSize: json['maxinumPoolSize'],
+              threadpool_limitPoolSize: json['limitPoolSize'],
+              threadpool_queueSize: json['queueSize'],
+          });
       })    
-    this.updateSessionInfo();
-    this.setIntervalId = setInterval(() => {
       this.updateSessionInfo();
-    }, this.state.dashboardRefreshSec * 1000);
+      this.setIntervalId = setInterval(() => {
+          this.updateSessionInfo();
+      }, this.state.dashboardRefreshSec * 1000);
   }
 
   updateSessionInfo = () => {
-    this.request.fetchGetResource(this.state.sessionInfo.sessionSimple.path)
-    .then(json => {
-        this.setState({
-          sessionInfo : {
-            sessionSimpleJson: json,
-            sessionNames: Object.keys(json),
-            sessionStatistics: Object.keys(json).map((e, idx) => {
-              var map  = json[e].statisticsMap;
-              map.NAME = e;
-              return map;
-            }),  
-            sessionSimple: {
-              name: 'sessionSimple',
-              title: 'Session Information',
-              path: '/session?type=SESSION_SIMPLE',
-            },    
-          }
-        })
-        console.log(this.state.sessionInfo.sessionStatistics);
+      this.request.fetchGetResource(this.state.sessioninfo_sessionSimple.path)
+      .then(json => {
+          this.setState({
+              sessioninfo_sessionSimpleJson: json,
+              sessioninfo_sessionNames: Object.keys(json),
+              sessioninfo_sessionStatistics: Object.keys(json).map((e, idx) => {
+                  var map  = json[e].statisticsMap;
+                  map.NAME = e;
+                  return map;
+              }),  
+              sessioninfo_sessionSimple: {
+                  name: 'sessionSimple',
+                  title: 'Session Information',
+                  path: '/session?type=SESSION_SIMPLE',
+              },    
+          })
+          console.log(this.state.sessionInfo_sessionStatistics);
       })  
-    }
+  }
 
   componentWillUnmount() {
-    clearInterval(this.setIntervalId);
+      clearInterval(this.setIntervalId);
   }
 
   handleCorePoolSize = (v) => {
-    this.setState({
-      corePoolSize: v,
-    });
+      this.setState({
+          threadpool_corePoolSize: v,
+      });
   }
 
   handleMaximumPoolSize = (v) => {
-    this.setState({
-      maximumPoolSize: v,
-    });
+      this.setState({
+          threadpool_maximumPoolSize: v,
+      });
   }
 
   handleApply = (event) => {
-    if (this.state.threadpool.corePoolSize <= this.state.threadpool.maximumPoolSize) {
-      const body = {
-        corePoolSize: this.state.threadpool.corePoolSize,
-        maximumPoolSize: this.state.threadpool.maximumPoolSize,
+      if (this.state.threadpool_corePoolSize <= this.state.threadpool_maximumPoolSize) {
+          const body = {
+              corePoolSize: this.state.threadpool_corePoolSize,
+              maximumPoolSize: this.state.threadpool_maximumPoolSize,
+          }
+          this.res = this.request.fetchPostRequestAsync(this.state.threadpool_path1, body);
+          this.res.then(json => {        
+              if (json != null && json['status'] === 'success') {
+                  event.open = true;
+                  event.message = json['message'];
+                  event.status = json['status'];
+                  this.handleAlertOpen(event);
+              }
+          })
       }
-      this.res = this.request.fetchPostRequestAsync(this.state.threadpool.path1, body);
-      this.res.then(json => {        
-        if (json != null && json['status'] === 'success') {
-          event.open = true;
-          event.message = json['message'];
-          event.status = json['status'];
-          this.handleAlertOpen(event);
-        }
-      })
-    }
+  }
+  
+  handleSearch = (v) => {
+
   }
 
   stableSort(array, comparator) {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
-      if (order !== 0) return order;
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
+      const stabilizedThis = array.map((el, index) => [el, index]);
+      stabilizedThis.sort((a, b) => {
+          const order = comparator(a[0], b[0]);
+          if (order !== 0) return order;
+          return a[1] - b[1];
+      });
+      return stabilizedThis.map((el) => el[0]);
   }
 
   handleAlertOpen = (event) => {
-    this.setState({
-      alert: {
-        open: event.open,
-        message: event.message,
-        status: event.status,
-      }
-    })
+      this.setState({
+          alert_open: event.open,
+          alert_message: event.message,
+          alert_status: event.status,
+      })
   };
 
   handleAlertClose = (event) => {
-    this.setState({
-      alert: {
-        open: false,
-        message: '',
-        status: ''
-      }
-    })
+      this.setState({
+          alert_open: false,
+          alert_message: '',
+          alert_status: ''
+      })
   };
 
   render() {
-    const { classes, card } = this.props;
-    const bull = <span className={classes.bullet}>•</span>;
+      const { classes, card } = this.props;
+      const bull = <span className={classes.bullet}>•</span>;
     
-    return (
-      <div>
-      <Snackbar open={this.state.alert.open} autoHideDuration={3000} onClose={this.handleAlertClose}>
-        <MessageAlert className={classes.alert}
-          serverity={this.state.alert.status}
-          elevation={10}
-          variant="filled"
-          onClose={this.handleAlertClose} >{this.state.alert.message}</MessageAlert>
-      </Snackbar>
-      <Grid container spacing={5} justify='center' className={classes.root}>
-        <Grid item xs>
-          <ChartCard content={this.state.memory.content} medias={(
-            <LineChart name={this.state.memory.name}
-              title={this.state.memory.title}
-              path={this.state.memory.path}
-              elements={this.state.memory.elements}
-              labels={this.state.memory.labels}
-              color={[randomColor(), randomColor(), randomColor()]}
-              dimension={this.state.memory.dimension}
-              refreshSec={this.state.dashboardRefreshSec}
-              unit={this.state.memory.unit}
-            />)}
-          />
-        </Grid>
-        <Grid item xs>
-          <ChartCard medias={(
-            <LineChart name={this.state.cpu.name}
-              title={this.state.cpu.title}
-              path={this.state.cpu.path}
-              elements={this.state.cpu.elements}
-              labels={this.state.cpu.labels}
-              color={[randomColor(), randomColor()]}
-              dimension={this.state.cpu.dimension}
-              refreshSec={this.state.dashboardRefreshSec}
-              unit={this.state.cpu.unit}
-            />)}
-          />
-        </Grid>
-        <Grid item xs>
-          <ChartCard medias={(
-            <Grid>
-              <Grid key={0} item>
-                <BarChart name={this.state.threadPool.name}
-                  title={this.state.threadPool.title}
-                  path={this.state.threadPool.path}
-                  elements={this.state.threadPool.elements}
-                  labels={this.state.threadPool.labels}
-                  color={[randomColor(), randomColor(), randomColor(), randomColor()]}
-                  dimension={this.state.threadPool.dimension}
-                  refreshSec={this.state.dashboardRefreshSec} />
-              </Grid>
-              <Grid item>
-                <Grid item>
-                  <Typography className={classes.text} id='pretto-slider' gutterBottom>
-                    Core Thread Size
-                </Typography>
-                  <PrettoSlider valueLabelDisplay='auto'
-                    aria-labelledby='range-slider'
-                    value={this.state.threadPool.corePoolSize}
-                    max={this.state.threadPool.maximumPoolSize}
-                    onChange={(event, v) => { this.handleCorePoolSize(v) }} />
-                </Grid>
-                <Grid item>
-                  <Typography className={classes.text} id='pretto-slider' gutterBottom>
-                    Max Thread Size
-                  </Typography>
-                  <PrettoSlider valueLabelDisplay='auto'
-                    aria-labelledby='range-slider'
-                    value={this.state.threadPool.maximumPoolSize}
-                    max={this.state.threadPool.limitPoolSize}
-                    onChange={(event, v) => { this.handleMaximumPoolSize(v) }} />
-                  <ApplyButton startIcon={<DoneOutlinedIcon />} onClick={(event, v) => { this.handleApply(event) }}> Apply </ApplyButton>
-                </Grid>
-              </Grid>
-            </Grid>
-          )}
-          />
-        </Grid>
-        <Grid item xs={12}>          
-          <InformCard title={this.state.sessionInfo.sessionSimple.title} content={
-            (
-              <div>
-              <StyledTableContainer component={Paper}>
-              <Box m={2}>
-                <Grid container spacing={3} justify='left' style={{width: 1400}}>
-                  <Grid item xs={3}>
-                  <StyledAutocomplete 
-                      id="size-small-standard" 
-                      options={this.state.sessionColumn} 
-                      getOptionLabel={(option) => option} 
-                      defaultValue={this.state.sessionColumn[0]}
-                      renderOption={(option) => (
-                        <StyledTypography>{option}</StyledTypography>
-                      )}
-                      renderInput={(params) => (
-                        <StyledTextField {...params} id="standard-size-small" label="Column" variant="outlined" />
-                    )}/>
+      return (
+          <div>
+              <Snackbar open={this.state.alert_open} autoHideDuration={3000} onClose={this.handleAlertClose}>
+                  <MessageAlert className={classes.alert}
+                                serverity={this.state.alert_status}
+                                elevation={10}
+                                variant="filled"
+                                onClose={this.handleAlertClose} >{this.state.alert_message}
+                  </MessageAlert>
+              </Snackbar>
+              <Grid container spacing={5} justify='center' className={classes.root}>
+                  <Grid item xs>
+                      <ChartCard content={this.state.memory_content} medias={(
+                                <LineChart name={this.state.memory_name}
+                                          title={this.state.memory_title}
+                                          path={this.state.memory_path}
+                                          elements={this.state.memory_elements}
+                                          labels={this.state.memory_labels}
+                                          color={[randomColor(), randomColor(), randomColor()]}
+                                          dimension={this.state.memory_dimension}
+                                          refreshSec={this.state.dashboardRefreshSec}
+                                          unit={this.state.memory_unit} />)}
+                      />
                   </Grid>
-                  <Grid item xs={3}>
-                    <StyledTextField id="standard-size-small" label="Search" variant="outlined" />
+                  <Grid item xs>
+                      <ChartCard medias={(
+                                <LineChart name={this.state.cpu_name}
+                                          title={this.state.cpu_title}
+                                          path={this.state.cpu_path}
+                                          elements={this.state.cpu_elements}
+                                          labels={this.state.cpu_labels}
+                                          color={[randomColor(), randomColor()]}
+                                          dimension={this.state.cpu_dimension}
+                                          refreshSec={this.state.dashboardRefreshSec}
+                                          unit={this.state.cpu_unit} />)}
+                      />
                   </Grid>
-                </Grid>
-              </Box>
-              <Table className={classes.table} aria-label="simple table">
-                <TableHead>
-                  <StyledTableRow> 
-                    {
-                      this.state.sessionColumn.map((s, idx) => (
-                        <StyledTableCell key={idx} align="center">{s}</StyledTableCell>
-                      ))
-                    }
-                  </StyledTableRow>
-                </TableHead>
-                <TableBody>
-                  {console.log(this.state.sessionInfo.sessionStatistics)}
-                  {                    
-                    this.state.sessionInfo.sessionNames.map((s, idx) =>                   
-                      (              
-                      <StyledTableRow key={s}>
-                        <StyledTableCell component="th" scope="row">
-                          <SessionNameTypography>{s.toUpperCase()}</SessionNameTypography>
-                        </StyledTableCell>
-                        <StyledTableCell align="center">{this.state.sessionInfo.sessionStatistics[idx].SESSION_MODE.replaceAll('_', ' ')} </StyledTableCell>
-                        <StyledTableCell align="center">{this.state.sessionInfo.sessionStatistics[idx].SESSION_TOTAL_SUCCESS}</StyledTableCell>
-                        <StyledTableCell align="center">{this.state.sessionInfo.sessionStatistics[idx].SESSION_TOTAL_FAIL}</StyledTableCell>
-                        <StyledTableCell align="center">{ (this.state.sessionInfo.sessionStatistics[idx].SESSION_SEND_SIZE_TOTAL / (1024 * 1024)).toFixed(2)} MB</StyledTableCell>
-                        <StyledTableCell align="center">{ (this.state.sessionInfo.sessionStatistics[idx].SESSION_RECEIVE_SIZE_TOTAL / (1024 * 1024)).toFixed(2)} MB</StyledTableCell>
-                      </StyledTableRow>
-                      ))
-                  }
-                </TableBody>
-              </Table>
-            </StyledTableContainer>           
-            </div>     
-            )
-          }>
-          </InformCard>
-        </Grid>
+                  <Grid item xs>
+                      <ChartCard medias={(
+                          <Grid>
+                              <Grid key={0} item>
+                                  <BarChart name={this.state.threadpool_name}
+                                            title={this.state.threadpool_title}
+                                            path={this.state.threadpool_path}
+                                            elements={this.state.threadpool_elements}
+                                            labels={this.state.threadpool_labels}
+                                            color={[randomColor(), randomColor(), randomColor(), randomColor()]}
+                                            dimension={this.state.threadpool_dimension}
+                                            refreshSec={this.state.dashboardRefreshSec} />
+                              </Grid>
+                              <Grid item>
+                              <Grid item>
+                                  <Typography className={classes.text} id='pretto-slider' gutterBottom>Core Thread Size</Typography>
+                                  <PrettoSlider valueLabelDisplay='auto'
+                                            aria-labelledby='range-slider'
+                                            value={this.state.threadpool_corePoolSize}
+                                            max={this.state.threadpool_maximumPoolSize}
+                                            onChange={(event, v) => { this.handleCorePoolSize(v) }} />
+                              </Grid>
+                              <Grid item>
+                                    <Typography className={classes.text} id='pretto-slider' gutterBottom>Max Thread Size</Typography>
+                                    <PrettoSlider valueLabelDisplay='auto'
+                                              aria-labelledby='range-slider'
+                                              value={this.state.threadpool_maximumPoolSize}
+                                              max={this.state.threadpool_limitPoolSize}
+                                              onChange={(event, v) => { this.handleMaximumPoolSize(v) }} />
+                                    <ApplyButton startIcon={<CheckOutlinedIcon />} 
+                                              onClick={(event, v) => { this.handleApply(event) }}> 
+                                              Apply 
+                                    </ApplyButton>
+                                  </Grid>
+                              </Grid>
+                          </Grid>
+                      )} />
+                  </Grid>
+                  <Grid item xs={12}>          
+                      <InformCard title={this.state.sessioninfo_sessionSimple.title} content={(
+                          <div>
+                               <StyledTableContainer component={Paper}>
+                                  <Box m={2}>
+                                      <Grid container spacing={3} justify='left' style={{width: 600}}>
+                                          <Grid item xs={3}>
+                                              <StyledSelect
+                                                  labelId="demo-simple-select-label"
+                                                  id="demo-simple-select"
+                                                  value={this.state.sessionColumn[0]} >
+                                                    {
+                                                        this.state.sessionColumn.map((s, idx) => (
+                                                            <MenuItem style={{fontSize: 12}} key={idx} value={s}>{s}</MenuItem>
+                                                        ))
+                                                    }
+                                              </StyledSelect>
+                                          </Grid>
+                                          <Grid item xs={3}>
+                                              <StyledTextField style={{fontSize: 12}} id="standard-size-small" label="Search" variant="outlined" onChange={v => {this.handleSearch(v)}}/>
+                                          </Grid>
+                                      </Grid>
+                                  </Box>
+                                  <Table className={classes.table} aria-label="simple table">
+                                      <TableHead>
+                                          <StyledTableRow> 
+                                              {
+                                                  this.state.sessionColumn.map((s, idx) => (
+                                                      <StyledTableCell key={idx} align="center">{s}</StyledTableCell>
+                                                  ))
+                                              }
+                                          </StyledTableRow>
+                                      </TableHead>
+                                      <TableBody>
+                                          {
+                                              console.log(this.state.sessioninfo_sessionStatistics)
+                                          }
+                                          {                    
+                                              this.state.sessioninfo_sessionNames.map((s, idx) =>                   
+                                                  (
+                                                      <StyledTableRow key={s}>
+                                                          <StyledTableCell component="th" scope="row">
+                                                              <SessionNameTypography>{s.toUpperCase()}</SessionNameTypography>
+                                                          </StyledTableCell>
+                                                      <StyledTableCell align="center">{this.state.sessioninfo_sessionStatistics[idx].SESSION_MODE.replaceAll('_', ' ')} </StyledTableCell>
+                                                      <StyledTableCell align="center">{this.state.sessioninfo_sessionStatistics[idx].SESSION_TOTAL_SUCCESS}</StyledTableCell>
+                                                      <StyledTableCell align="center">{this.state.sessioninfo_sessionStatistics[idx].SESSION_TOTAL_FAIL}</StyledTableCell>
+                                                      <StyledTableCell align="center">{ (this.state.sessioninfo_sessionStatistics[idx].SESSION_SEND_SIZE_TOTAL / (1024 * 1024)).toFixed(2)} MB</StyledTableCell>
+                                                      <StyledTableCell align="center">{ (this.state.sessioninfo_sessionStatistics[idx].SESSION_RECEIVE_SIZE_TOTAL / (1024 * 1024)).toFixed(2)} MB</StyledTableCell>
+                                                      </StyledTableRow>
+                                                  ))
+                                          }
+                                      </TableBody>
+                                  </Table>
+                              </StyledTableContainer>           
+                          </div>     
+                      )
+                  }>
+              </InformCard>
+          </Grid>
       </Grid>
     </div>
     )

@@ -1,12 +1,6 @@
 import { createMuiTheme, makeStyles, withStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableContainer from '@material-ui/core/TableContainer'
-import TableCell from '@material-ui/core/TableCell';
-import TableRow from '@material-ui/core/TableRow';
-import TextField from '@material-ui/core/TextField';
-import Button from '@material-ui/core/Button';
+import { Button, Select, TableContainer, Table, TableCell, TableRow, TextField, Typography } from '@material-ui/core';
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import { Typography } from '@material-ui/core';
 
 export const themeColor = '#007580';
 export const contentBackground = '#d8ebe4';
@@ -206,6 +200,29 @@ export const StyledTableContainer = withStyles((theme) => ( {
   },
 }))(TableContainer)
 
+export const StyledAutocomplete = withStyles((theme) => ( {
+  root: {
+    '& label.Mui-focused' : {
+      color: 'grey',
+    },
+    '& .MuiInputBase-root': {
+      color: 'grey',
+      fontSize: 12,
+    },    
+    '& .MuiInput-underline:after': {
+      color: 'grey',
+      fontSize: 12,
+      borderBottomColor: 'grey',
+    },    
+    multilineColor: 'grey',
+    fontColor: 'grey',
+    fontSize: 10,
+    fontStyle: 'bold',
+    paddingTop: 0,
+    width: 100,
+  },
+}))(Autocomplete)
+
 export const StyledTextField = withStyles((theme) => ( {
   root: {
     '& label.Mui-focused' : {
@@ -232,13 +249,14 @@ export const StyledTextField = withStyles((theme) => ( {
       },
     },    
     multilineColor: 'grey',
+    fontSize: 12,
     fontColor: 'grey',
     fontStyle: 'bold',
-    width: 300,
+    width: 200,
   }
 }))(TextField)
 
-export const StyledAutocomplete = withStyles((theme) => ( {
+export const StyledSelect = withStyles((theme) => ( {
   root: {
     '& label.Mui-focused' : {
       color: 'grey',
@@ -254,12 +272,12 @@ export const StyledAutocomplete = withStyles((theme) => ( {
     },    
     multilineColor: 'grey',
     fontColor: 'grey',
-    fontSize: 10,
+    fontSize: 12,
     fontStyle: 'bold',
-    paddingTop: 0,
+    paddingTop: 20,
     width: 100,
   },
-}))(Autocomplete)
+}))(Select)
 
 export const StyledTableCell = withStyles((theme) => ({
   head: {

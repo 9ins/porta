@@ -10,7 +10,7 @@ public class PortaAppTest {
 
     @Before
     public void before_test() {
-        this.configPath = "D:\\Projects\\porta\\config";
+        this.configPath = "D:\\Github\\porta\\config";
     }
 
     @Test
