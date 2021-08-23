@@ -7,4 +7,4 @@
 ![](./porta-dashboard.PNG)
 
 
-I am climbing every mountines and swiming oceans now.
+I am climbing every mountines and swimming oceans now.
